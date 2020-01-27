@@ -40,6 +40,28 @@ def batch(batch_keys):
 
 
 
+#
+# KWARGS
+#
+def product(product):
+    kwargs=meta(product,'product')
+    kwargs['name']=kwargs.get('name',kwargs['id'].upper())
+    return kwargs
+
+
+def bands(product):
+    _meta=meta(product)
+    """ product.add_bands """
+    bands_kwargs_list=[]
+    for i,band in enumerate(_meta['bands']):
+        b={}
+        b['product_id']=_meta['product'].get('id')
+        b['band_index']=i
+        b['readers']=b.get('readers',_meta['product'].get('readers'))
+        b.update(band)
+        bands_kwargs_list.append(b)
+    return bands_kwargs_list
+
 
 #
 # METHODS

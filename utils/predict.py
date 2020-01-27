@@ -29,8 +29,6 @@ def batch(model,batch_keys):
     return H.to_numpy(input_batch), H.to_numpy(preds), H.to_numpy(cats).astype(np.uint8)
 
 
-
-
 def descartes_run(
         product_id,
         model,

@@ -49,15 +49,14 @@ def raster_info(aoi,bands):
 # PRODUCTS 
 #
 def create_product(**kwargs):
-    # return Product(**kwargs).save()
     ident=kwargs.pop('id')
     p=Product(id=ident)
     p=_update_object(p,kwargs)
     return p.save()
 
 
-def add_bands(*bands):
-    return [ add_band(b) for b in bands ] 
+def add_bands(bands):
+    [ add_band(**b) for b in bands ] 
 
 
 def add_band(**kwargs):
