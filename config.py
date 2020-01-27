@@ -7,6 +7,7 @@ import os
 HOME=os.path.expanduser('~')
 PROJECT_DIR=os.path.dirname(os.path.realpath(__file__))
 PRODUCTS_DIR='{}/products'.format(PROJECT_DIR)
+CLI_DIR='{}/cli'.format(PROJECT_DIR)
 
 
 #
@@ -37,3 +38,13 @@ STDEVS=[
 #
 DEFAULT_MODEL_TYPE='dlv3p'
 DEFAULT_NB_INPUT_CH=5
+MODEL_CONFIG_FILE='treecover'
+
+
+
+
+#
+# OTHER
+#
+SAVE_LOCAL=False
+DL_PREFIX='TREECANOPY'

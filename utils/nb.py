@@ -5,6 +5,7 @@ import matplotlib.ticker as mplib_ticker
 import rasterio.plot as rplt
 import seaborn as sns
 import image_kit.processor as proc
+from config import MEANS, STDEVS
 
 
 
