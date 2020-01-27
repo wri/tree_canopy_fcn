@@ -29,7 +29,7 @@ DATE_PROPERTIES=[
     "properties.date.day" ]
 
 
-OVERVIEWS=[2,4,6,8,10,12,14,16]
+OVERVIEWS=[2,4,6,10,12,16,20,24,28,32,36,40,50,60,100,200]
 OVERVIEW_RESAMPLER=OverviewResampler.MODE
 
 #

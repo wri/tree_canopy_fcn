@@ -12,12 +12,6 @@ run:
         criterion:
             pos_weight: 
                 - 3.5
-            weights:
-                - 1.1369326474182946
-                - 1.7699193769654504
-                - 1.0
-                - 2.80152435867027
-                - 0.0000001
         optimizer:
             name: radam
         loaders:         
