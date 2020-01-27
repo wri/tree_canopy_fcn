@@ -1,6 +1,7 @@
 import pickle
 import re
-from config import DL_PREFIX
+import numpy as np
+from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS
 
 
 #
@@ -30,3 +31,24 @@ def get_image_id(tile_key,date,prefix=DL_PREFIX):
     date=re.sub('-','',date)
     tile_key=re.sub(':','x',tile_key)
     return f'{prefix}_{tile_key}-{date}'
+
+
+
+
+#
+# NUMPY
+#
+def get_histogram(class_band):
+    cats,counts=cats_and_counts(class_band)
+    hist={ cat: cnt for cat,cnt in zip(cats,counts) }
+    return { VALUE_CATEGORIES[cat]: hist.get(cat,0) for cat in range(NB_CATS) }
+
+
+def cats_and_counts(class_band):
+    cats,counts=np.unique(class_band,return_counts=True)
+    if isinstance(cats,np.ma.core.MaskedArray):
+        cats=cats.data
+    cats=[ int(c) for c  in cats ]
+    counts=[ int(c) for c  in counts ]
+    return cats, counts
+

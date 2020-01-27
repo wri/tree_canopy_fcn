@@ -41,6 +41,15 @@ DEFAULT_NB_INPUT_CH=5
 MODEL_CONFIG_FILE='treecover'
 
 
+#
+# DATA
+#
+VALUE_CATEGORIES={
+    0: 'Not Tree',
+    1: 'Tree',
+    2: 'No Data',
+}
+NB_CATS=len(VALUE_CATEGORIES)
 
 
 #

@@ -35,25 +35,36 @@ def descartes_run(
         product_id,
         model,
         batch_keys,
-        dates,
+        date,
         bands,
         extra_properties={}):
     def _upload(args):
-        key,date,preds,cats=args
-        rinfo=dlabs.raster_info(key,bands)
-        image_id=h.get_image_id(key,date)
-        im=np.stack([cats,preds])
-        print(image_id,im.shape)
-        task=dlabs.upload(
-                im,
-                product_id,
-                image_id,
-                date,
-                rinfo,
-                extra_properties=extra_properties)
-        return image_id, task
+        props=extra_properties.copy()
+        tile_key,date,pred,cat=args
+        hist=h.get_histogram(cat)
+        pct=hist['Tree']/(hist['Tree']+hist['Not Tree'])
+        props['tile_key']=tile_key
+        props['hist']=str(hist)
+        props['percent_tree']=pct
+        props['year']=str(date).split('-')[0][:4]
+        rinfo=dlabs.raster_info(tile_key,bands)
+        image_id=h.get_image_id(tile_key,date)
+        im=np.stack([cat,pred])
+        try:
+            task=dlabs.upload(
+                    im,
+                    product_id,
+                    image_id,
+                    date,
+                    rinfo,
+                    extra_properties=props)
+            return image_id, task
+        except Exception as e:
+            return image_id, str(e)
     _,preds,cats=batch(model,batch_keys)
-    args_list=list(zip(batch_keys,dates,preds,cats))
+    if not isinstance(date,list):
+        date=[date]*len(batch_keys)
+    args_list=list(zip(batch_keys,date,preds,cats))
     return mproc.map_with_threadpool(_upload,args_list,len(args_list))
 
 
