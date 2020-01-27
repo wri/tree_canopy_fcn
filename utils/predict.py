@@ -13,7 +13,7 @@ from config import SAVE_LOCAL
 # CONSTANTS
 #
 THRESHOLD=0.25
-
+NO_DATA_VALUE=2
 
 
 
@@ -21,12 +21,15 @@ THRESHOLD=0.25
 # PREDICT
 #
 def batch(model,batch_keys):
-    input_batch=torch.Tensor(load.batch(batch_keys))
+    input_batch,nodatas=load.batch(batch_keys)
+    input_batch=torch.Tensor(input_batch)
     if torch.cuda.is_available():
         input_batch=input_batch.cuda()
     preds=model(input_batch).squeeze(dim=1)
     cats=(preds>THRESHOLD)
-    return H.to_numpy(input_batch), H.to_numpy(preds), H.to_numpy(cats).astype(np.uint8)
+    cats=H.to_numpy(cats).astype(np.uint8)
+    cats[nodatas]=NO_DATA_VALUE
+    return H.to_numpy(input_batch), H.to_numpy(preds), cats
 
 
 def descartes_run(

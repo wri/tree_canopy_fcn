@@ -31,12 +31,14 @@ TILE_MAP=h.read_pickle(TILE_MAP_PATH)
 #
 def image(tile_key):
     im=io.read(TILE_MAP[tile_key],return_profile=False)
-    return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi'])
+    nodata=(im[:3].sum(axis=0)==0)
+    return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
 def batch(batch_keys):
     ims=mproc.map_with_threadpool(image,batch_keys,len(batch_keys))
-    return np.stack(ims)
+    ims,nodatas=zip(*ims)
+    return np.stack(ims),np.stack(nodatas)
 
 
 
