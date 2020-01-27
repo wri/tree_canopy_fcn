@@ -1,0 +1,67 @@
+# Mac / Local
+.DS_Store
+tmp/
+downloads/
+logs/
+data/
+
+
+# Python / Tests
+*.pyc
+pip-selfcheck.json
+man
+
+
+# Codebase
+playground.py
+playground.sh
+playground/
+tmp*
+# temp-ignore
+data/datasets 
+
+# Postprocessing
+postprocess/regions/*/
+postprocess/regions/qgis.layer.style.qml
+
+# SUBLIME
+*sftp-config.json*
+
+
+# GITNB
+notebooks/
+nbpy/
+nbpy_nb/
+gitnb.config.yaml
+*.ipynb
+
+
+# Latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.spl
+*.synctex*
+
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+MANIFEST
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+bin/
+include
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
