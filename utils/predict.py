@@ -6,7 +6,7 @@ import torch_kit.helpers as H
 import utils.helpers as h
 import utils.load as load
 import utils.dlabs as dlabs
-from config import SAVE_LOCAL
+from config import LOCAL_SRC
 
 
 #
@@ -20,8 +20,11 @@ NO_DATA_VALUE=2
 #
 # PREDICT
 #
-def batch(model,batch_keys):
-    input_batch,nodatas=load.batch(batch_keys)
+def batch(model,batch_keys,year=None,local_src=LOCAL_SRC):
+    if local_src:
+        input_batch,nodatas=load.batch(batch_keys)
+    else:
+        input_batch,nodatas=load.dl_batch(batch_keys,year=year)
     input_batch=torch.Tensor(input_batch)
     if torch.cuda.is_available():
         input_batch=input_batch.cuda()
@@ -38,7 +41,9 @@ def descartes_run(
         batch_keys,
         date,
         bands,
-        extra_properties={}):
+        extra_properties={},
+        year=None,
+        local_src=LOCAL_SRC):
     def _upload(args):
         props=extra_properties.copy()
         tile_key,date,pred,cat=args
@@ -62,7 +67,7 @@ def descartes_run(
             return image_id, task
         except Exception as e:
             return image_id, str(e)
-    _,preds,cats=batch(model,batch_keys)
+    _,preds,cats=batch(model,batch_keys,year=year,local_src=local_src)
     if not isinstance(date,list):
         date=[date]*len(batch_keys)
     args_list=list(zip(batch_keys,date,preds,cats))

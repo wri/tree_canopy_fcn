@@ -11,6 +11,7 @@ import torch_kit.helpers as H
 import image_kit.io as io
 from image_kit.handler import process_input
 import utils.helpers as h
+import utils.dlabs as dlabs
 from config import PRODUCTS_DIR, TILE_MAP_PATH
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
@@ -22,7 +23,7 @@ from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
 # CONSTANTS
 #
 TILE_MAP=h.read_pickle(TILE_MAP_PATH)
-
+YEAR_ERROR='treecover.load: year required for DL downloads'
 
 
 
@@ -35,11 +36,28 @@ def image(tile_key):
     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
+def dl_image(tile_key,year):
+    if not year:
+        raise ValueError(YEAR_ERROR)
+    im=dlabs.mosaic(tile_key,year=year)
+    return process_input(im[:4],means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), (im[4]==0)
+
+
 def batch(batch_keys):
-    ims=mproc.map_with_threadpool(image,batch_keys,len(batch_keys))
+    ims=mproc.map_with_threadpool(image,batch_keys,max_processes=len(batch_keys))
     ims,nodatas=zip(*ims)
+    print('b',np.stack(nodatas).shape)
     return np.stack(ims),np.stack(nodatas)
 
+
+def dl_batch(batch_keys,year):
+    if not year:
+        raise ValueError(YEAR_ERROR)
+    def _dl_image(tile_key):
+        return dl_image(tile_key,year)
+    ims=mproc.map_with_threadpool(_dl_image,batch_keys,max_processes=len(batch_keys))
+    ims,nodatas=zip(*ims)
+    return np.stack(ims),np.stack(nodatas)
 
 
 #

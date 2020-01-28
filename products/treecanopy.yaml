@@ -1,5 +1,5 @@
 product:
-    id: tree_canopy
+    id: treecanopy
     readers: 
         - 'org:wri'
     description: >-

@@ -8,7 +8,7 @@ HOME=os.path.expanduser('~')
 PROJECT_DIR=os.path.dirname(os.path.realpath(__file__))
 DATA_DIR=f'{PROJECT_DIR}/data'
 PRODUCTS_DIR=f'{PROJECT_DIR}/products'
-CLI_DIR=f'{PRODUCTS_DIR}/cli'
+CLI_DIR=f'{PROJECT_DIR}/cli'
 TILES_DIR=f'{DATA_DIR}/tiles'
 
 
@@ -57,7 +57,7 @@ NB_CATS=len(VALUE_CATEGORIES)
 #
 # OTHER
 #
-SAVE_LOCAL=False
+LOCAL_SRC=False
 DL_PREFIX='TREECANOPY'
 BATCH_SIZE=12
 INPUT_BANDS=['red', 'green', 'blue', 'nir', 'alpha']

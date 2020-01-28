@@ -1,6 +1,7 @@
 import sys
 PROJECT_DIR='/home/ericp/tree_canopy_fcn/repo'
 sys.path.append(PROJECT_DIR)
+import utils.helpers as h
 import utils.load as load
 import utils.predict as predict
 
@@ -8,21 +9,23 @@ import utils.predict as predict
 #
 # CONFIG
 #
-BATCH_SIZE=12
-# PRODUCT_ID='wri:tree_canopy'
-PRODUCT_ID='wri:dev_1'
-DATE='2016-07-01'
-MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
+REGION_NAME='la_plus'
 START=None
-END=50
-NOISE_REDUCER=10
+END=20
+YEAR=2018
+LOCAL_SRC=False
 
+PRODUCT_ID='wri:tree_canopy'
+BATCH_SIZE=12
+DATE=f'{YEAR}-07-01'
+MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
+NOISE_REDUCER=10
 
 #
 # TILES
 #
 TILE_KEYS=list(load.TILE_MAP.keys())
-BATCHED_KEYS=[TILE_KEYS[i:i+BATCH_SIZE] for i in range(0, len(TILE_KEYS), BATCH_SIZE)]
+BATCHED_KEYS=h.batch_list(TILE_KEYS,batch_size=BATCH_SIZE)
 
 
 #
@@ -50,7 +53,9 @@ def run(batches,start=None,end=None):
             model=model,
             batch_keys=batch_keys,
             date=DATE,
-            bands=BANDS_META)
+            bands=BANDS_META,
+            year=YEAR,
+            local_src=LOCAL_SRC)
 
 
 run(BATCHED_KEYS,START,END)
