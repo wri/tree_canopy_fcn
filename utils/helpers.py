@@ -2,7 +2,7 @@ import pickle
 import re
 import geojson
 import numpy as np
-from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS
+from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS, BATCH_SIZE
 
 
 #
@@ -27,6 +27,10 @@ def read_geojson(path):
     with open(path) as file:
         data=geojson.load(file)
     return data
+
+
+def batch_list(lst,batch_size=BATCH_SIZE):
+    return [lst[i:i+batch_size] for i in range(0, len(lst), batch_size)]
 
 
 

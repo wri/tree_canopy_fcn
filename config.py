@@ -6,8 +6,10 @@ import os
 #
 HOME=os.path.expanduser('~')
 PROJECT_DIR=os.path.dirname(os.path.realpath(__file__))
-PRODUCTS_DIR='{}/products'.format(PROJECT_DIR)
-CLI_DIR='{}/cli'.format(PROJECT_DIR)
+DATA_DIR=f'{PROJECT_DIR}/data'
+PRODUCTS_DIR=f'{PROJECT_DIR}/products'
+CLI_DIR=f'{PRODUCTS_DIR}/cli'
+TILES_DIR=f'{DATA_DIR}/tiles'
 
 
 #
@@ -57,3 +59,9 @@ NB_CATS=len(VALUE_CATEGORIES)
 #
 SAVE_LOCAL=False
 DL_PREFIX='TREECANOPY'
+BATCH_SIZE=12
+INPUT_BANDS=['red', 'green', 'blue', 'nir', 'alpha']
+PRODUCTS=['usda:nrcs:naip:rgbn:v1']
+
+
+

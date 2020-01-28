@@ -5,12 +5,13 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
 from pprint import pprint
 import descarteslabs as dl
-from descarteslabs.scenes import Scene, SceneCollection, DLTile
+from descarteslabs.scenes import search, Scene, SceneCollection, DLTile
 from descarteslabs.client.services.catalog import Catalog
 from descarteslabs.catalog import Image, Product, OverviewResampler
 from descarteslabs.catalog import Product
 from descarteslabs.catalog import SpectralBand, MicrowaveBand, MaskBand
 from descarteslabs.catalog import ClassBand, GenericBand
+from config import INPUT_BANDS, PRODUCTS
 
 
 #
@@ -41,6 +42,23 @@ def raster_info(aoi,bands):
     meta=_coordinate_info(aoi).copy()
     meta['bands']=bands
     return meta
+
+
+
+#
+# IMAGERY
+#
+def mosaic(aoi,year,products=PRODUCTS,bands=INPUT_BANDS,return_geocontext=False):
+    if _is_str(aoi):
+        aoi=DLTile.from_key(aoi)
+    start=f'{year}-05-01'
+    end=f'{year}-09-01'
+    sc,_=search(aoi,products=products,start_datetime=start,end_datetime=end)
+    im=sc.mosaic(bands,aoi,mask_nodata=False,raster_info=False)
+    if return_geocontext:
+        return im, aoi
+    else:
+        return im
 
 
 

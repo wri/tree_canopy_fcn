@@ -14,7 +14,7 @@ import utils.helpers as h
 from config import PRODUCTS_DIR, TILE_MAP_PATH
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
-from config import MODEL_CONFIG_FILE, CLI_DIR
+from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
 
 
 
@@ -66,7 +66,7 @@ def bands(product):
 
 
 #
-# METHODS
+# META/SETUP/DATA
 #
 def meta(product,*keys):
     """ get product meta data
@@ -105,6 +105,13 @@ def model_config(model_name,key='models',file=MODEL_CONFIG_FILE):
     if key: meta=meta[key]
     if model_name: meta=meta[model_name]
     return meta
+
+
+def tile_keys(region_name):
+    path=f'{TILES_DIR}/{region_name}.p'
+    keys=h.read_pickle(path)
+    print(f'{region_name}:',len(keys))
+    return keys
 
 
 def available_weights(model_name):
