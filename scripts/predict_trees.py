@@ -11,8 +11,8 @@ import utils.predict as predict
 #
 REGION_NAME='la_plus'
 START=None
-END=20
-YEAR=2018
+END=None
+YEAR=2016
 DATE=f'{YEAR}-07-01'
 MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
 LOCAL_SRC=False
@@ -32,7 +32,17 @@ else:
 #
 # TILES
 #
+
+""" RUN ARCHIVE
+# - INIT RUN
 TILE_KEYS=list(load.TILE_MAP.keys())[:LIM]
+# - 2nd RUN
+INIT_TILE_KEYS=list(load.TILE_MAP.keys())
+REGION_TILE_KEYS=load.tile_keys(REGION_NAME)
+TILE_KEYS=[k for k in REGION_TILE_KEYS if k not in INIT_TILE_KEYS]
+"""
+# FULL RUN
+TILE_KEYS=load.tile_keys(REGION_NAME)[:LIM]
 BATCHED_KEYS=h.batch_list(TILE_KEYS,batch_size=BATCH_SIZE)
 
 
