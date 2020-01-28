@@ -1,5 +1,6 @@
 import pickle
 import re
+import geojson
 import numpy as np
 from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS
 
@@ -21,6 +22,11 @@ def read_pickle(path):
         obj=pickle.load(file)
     return obj
 
+
+def read_geojson(path):
+    with open(path) as file:
+        data=geojson.load(file)
+    return data
 
 
 

@@ -9,12 +9,14 @@ import utils.predict as predict
 # CONFIG
 #
 BATCH_SIZE=12
-PRODUCT_ID='wri:tree_canopy'
+# PRODUCT_ID='wri:tree_canopy'
+PRODUCT_ID='wri:dev_1'
 DATE='2016-07-01'
 MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
-START=90
-END=None
+START=None
+END=50
 NOISE_REDUCER=10
+
 
 #
 # TILES
