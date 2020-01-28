@@ -13,18 +13,26 @@ REGION_NAME='la_plus'
 START=None
 END=20
 YEAR=2018
-LOCAL_SRC=False
-
-PRODUCT_ID='wri:tree_canopy'
-BATCH_SIZE=12
 DATE=f'{YEAR}-07-01'
 MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
-NOISE_REDUCER=10
+LOCAL_SRC=False
+DEV=False
+
+if DEV:
+    PRODUCT_ID='wri:treecanopy'
+    LIM=8
+    BATCH_SIZE=3
+    NOISE_REDUCER=None
+else:
+    PRODUCT_ID='wri:treecanopy'
+    LIM=None
+    BATCH_SIZE=12
+    NOISE_REDUCER=10
 
 #
 # TILES
 #
-TILE_KEYS=list(load.TILE_MAP.keys())
+TILE_KEYS=list(load.TILE_MAP.keys())[:LIM]
 BATCHED_KEYS=h.batch_list(TILE_KEYS,batch_size=BATCH_SIZE)
 
 
@@ -46,7 +54,7 @@ def run(batches,start=None,end=None):
     print('NB BATCHES:',len(BATCHED_KEYS))
     print(f'RUN[{nb_batches}]:')
     for i,batch_keys in enumerate(batches[start:end]):
-        if not (i%NOISE_REDUCER): 
+        if NOISE_REDUCER and (not (i%NOISE_REDUCER)): 
             print('\t-',i)
         predict.descartes_run(
             product_id=PRODUCT_ID,
