@@ -27,6 +27,7 @@ YEAR_ERROR='treecover.load: year required for DL downloads'
 
 
 
+
 #
 # IO
 #
@@ -36,33 +37,48 @@ def image(tile_key):
     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
-def dl_image(tile_key,year,alpha_band=ALPHA_BAND):
+def dl_image(tile_key,year,start=None,end=None,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)
-    im=dlabs.mosaic(tile_key,year=year,alpha_band=alpha_band)
-    if alpha_band:
-        nodata=(im[4]==0)
+    im=dlabs.mosaic(tile_key,year=year,start=start,end=end,alpha_band=alpha_band)
+    if im is False:
+        return False, False
     else:
-        nodata=_nodata(im)
-    return process_input(im[:4],means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
+        if alpha_band:
+            nodata=(im[4]==0)
+        else:
+            nodata=_nodata(im)
+        if isinstance(im,np.ma.core.MaskedArray):
+            msk=im.mask
+            im=im.data
+            im[msk]=0
+            nodata=nodata | msk[0]
+        im=np.nan_to_num(im)
+        return process_input(im[:4],means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
 def batch(batch_keys):
     ims=mproc.map_with_threadpool(image,batch_keys,max_processes=len(batch_keys))
     ims,nodatas=zip(*ims)
-    print('b',np.stack(nodatas).shape)
     return np.stack(ims),np.stack(nodatas)
 
 
-def dl_batch(batch_keys,year,alpha_band=ALPHA_BAND):
+def dl_batch(batch_keys,year,start=None,end=None,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)
     def _dl_image(tile_key):
-        return dl_image(tile_key,year,alpha_band=alpha_band)
+        return dl_image(tile_key,year,start=start,end=end,alpha_band=alpha_band)
     ims=mproc.map_with_threadpool(_dl_image,batch_keys,max_processes=len(batch_keys))
-    ims,nodatas=zip(*ims)
-    return np.stack(ims),np.stack(nodatas)
-
+    inpts=[]
+    nodatas=[]
+    for im,nodata in ims:
+        if im is not False:
+            inpts.append(im)
+            nodatas.append(nodata)
+    if inpts:
+        return np.stack(inpts), np.stack(nodatas)
+    else:
+        return False, False
 
 #
 # KWARGS
@@ -99,7 +115,6 @@ def meta(product,*keys):
     for key in keys:
         meta=meta[key]
     return meta
-
 
 
 def model(config,init_weights=None):

@@ -9,20 +9,27 @@ import utils.predict as predict
 #
 # CONFIG
 #
-REGION_NAME='la_plus'
-START=50
+# REGION_NAME='la_plus'
+REGION_NAME='san_francisco'
+START=None
 END=None
-YEAR=2016
+YEAR=2018
+# NAIP
+INPUT_START_DATE=None
+INPUT_END_DATE=None
+# # AIRBUS
+# INPUT_START_DATE=f'{YEAR}-01-01'
+# INPUT_END_DATE=f'{YEAR}-09-01'
 DATE=f'{YEAR}-07-01'
 MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
 LOCAL_SRC=False
 DEV=False
 
 if DEV:
-    DATE=f'1999-07-01'
+    DATE=f'2002-07-01'
     PRODUCT_ID='wri:dev_1'
-    LIM=8
-    BATCH_SIZE=3
+    LIM=100
+    BATCH_SIZE=12
     NOISE_REDUCER=None
 else:
     PRODUCT_ID='wri:treecanopy'
@@ -74,10 +81,29 @@ def run(batches,start=None,end=None):
             date=DATE,
             bands=BANDS_META,
             year=YEAR,
+            start=INPUT_START_DATE,
+            end=INPUT_END_DATE,
             local_src=LOCAL_SRC)
 
 
 run(BATCHED_KEYS,START,END)
+
+
+
+
+
+from time import sleep
+import os
+print('\n'*10)
+print('-'*50)
+print('-'*50)
+print('turning off...')
+sleep(60*5)
+print('goodbye')
+print('-'*50)
+print('-'*50)
+print('\n'*10)
+os.system('sudo poweroff')
 
 
 

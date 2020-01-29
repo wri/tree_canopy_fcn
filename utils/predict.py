@@ -20,19 +20,29 @@ NO_DATA_VALUE=2
 #
 # PREDICT
 #
-def batch(model,batch_keys,year=None,local_src=LOCAL_SRC):
+def batch(
+        model,
+        batch_keys,
+        year=None,
+        start=None,
+        end=None,
+        local_src=LOCAL_SRC):
     if local_src:
         input_batch,nodatas=load.batch(batch_keys)
     else:
-        input_batch,nodatas=load.dl_batch(batch_keys,year=year)
-    input_batch=torch.Tensor(input_batch)
-    if torch.cuda.is_available():
-        input_batch=input_batch.cuda()
-    preds=model(input_batch).squeeze(dim=1)
-    cats=(preds>THRESHOLD)
-    cats=H.to_numpy(cats).astype(np.uint8)
-    cats[nodatas]=NO_DATA_VALUE
-    return H.to_numpy(input_batch), H.to_numpy(preds), cats
+        input_batch,nodatas=load.dl_batch(batch_keys,year=year,start=start,end=end)
+    if input_batch is False:
+        print('EMPTY:',batch_keys)
+        return False, False, False
+    else:
+        input_batch=torch.Tensor(input_batch)
+        if torch.cuda.is_available():
+            input_batch=input_batch.cuda()
+        preds=model(input_batch).squeeze(dim=1)
+        cats=(preds>THRESHOLD)
+        cats=H.to_numpy(cats).astype(np.uint8)
+        cats[nodatas]=NO_DATA_VALUE
+        return H.to_numpy(input_batch), H.to_numpy(preds), cats
 
 
 def descartes_run(
@@ -43,12 +53,18 @@ def descartes_run(
         bands,
         extra_properties={},
         year=None,
+        start=None,
+        end=None,
         local_src=LOCAL_SRC):
     def _upload(args):
-        props=extra_properties.copy()
         tile_key,date,pred,cat=args
+        props=extra_properties.copy()
         hist=h.get_histogram(cat)
-        pct=hist['Tree']/(hist['Tree']+hist['Not Tree'])
+        nb_valid_pix=(hist['Tree']+hist['Not Tree'])
+        if nb_valid_pix:
+            pct=hist['Tree']/nb_valid_pix
+        else:
+            pct='NaN'
         props['tile_key']=tile_key
         props['hist']=str(hist)
         props['percent_tree']=pct
@@ -67,11 +83,20 @@ def descartes_run(
             return image_id, task
         except Exception as e:
             return image_id, str(e)
-    _,preds,cats=batch(model,batch_keys,year=year,local_src=local_src)
-    if not isinstance(date,list):
-        date=[date]*len(batch_keys)
-    args_list=list(zip(batch_keys,date,preds,cats))
-    return mproc.map_with_threadpool(_upload,args_list,len(args_list))
+    _,preds,cats=batch(
+        model,
+        batch_keys,
+        year=year,
+        start=start,
+        end=end,
+        local_src=local_src)
+    if preds is False:
+        return []
+    else:
+        if not isinstance(date,list):
+            date=[date]*len(batch_keys)
+        args_list=list(zip(batch_keys,date,preds,cats))
+        return mproc.map_with_threadpool(_upload,args_list,len(args_list))
 
 
 

@@ -68,12 +68,15 @@ LOCAL_SRC=False
 DL_PREFIX='TREECANOPY'
 BATCH_SIZE=12
 INPUT_BANDS=['red', 'green', 'blue', 'nir', 'alpha']
-ALPHA_BAND=False
-PRODUCTS=['usda:naip:rgbn:v1']
-
-# PRODUCTS=['usda:nrcs:naip:rgbn:v1']
-# PRODUCTS=['usda:naip:rgbn:v1','usda:nrcs:naip:rgbn:v1']
-
+# # NAIP < 2018
+# ALPHA_BAND=False
+# PRODUCTS=['usda:naip:rgbn:v1']
+# NAIP 2018
+ALPHA_BAND=True
+PRODUCTS=['usda:nrcs:naip:rgbn:v1']
+# # # AIRBUS
+# ALPHA_BAND=True
+# PRODUCTS=['airbus:oneatlas:phr:v2']
 
 
 
