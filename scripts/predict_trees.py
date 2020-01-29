@@ -10,7 +10,7 @@ import utils.predict as predict
 # CONFIG
 #
 REGION_NAME='la_plus'
-START=None
+START=50
 END=None
 YEAR=2016
 DATE=f'{YEAR}-07-01'
@@ -19,7 +19,8 @@ LOCAL_SRC=False
 DEV=False
 
 if DEV:
-    PRODUCT_ID='wri:treecanopy'
+    DATE=f'1999-07-01'
+    PRODUCT_ID='wri:dev_1'
     LIM=8
     BATCH_SIZE=3
     NOISE_REDUCER=None
@@ -64,7 +65,7 @@ def run(batches,start=None,end=None):
     print('NB BATCHES:',len(BATCHED_KEYS))
     print(f'RUN[{nb_batches}]:')
     for i,batch_keys in enumerate(batches[start:end]):
-        if NOISE_REDUCER and (not (i%NOISE_REDUCER)): 
+        if (not NOISE_REDUCER) or (not (i%NOISE_REDUCER)): 
             print('\t-',i)
         predict.descartes_run(
             product_id=PRODUCT_ID,

@@ -13,6 +13,13 @@ TILES_DIR=f'{DATA_DIR}/tiles'
 
 
 #
+# DATA
+#
+HEIGHT_THRESHOLD=4
+NDVI_THRESHOLD=0.1
+
+
+#
 # FILES
 #
 TILE_MAP_PATH='/datadrive/UTC/Los_Angeles/shp/tile_map.pkl'
@@ -61,7 +68,12 @@ LOCAL_SRC=False
 DL_PREFIX='TREECANOPY'
 BATCH_SIZE=12
 INPUT_BANDS=['red', 'green', 'blue', 'nir', 'alpha']
-PRODUCTS=['usda:nrcs:naip:rgbn:v1']
+ALPHA_BAND=False
+PRODUCTS=['usda:naip:rgbn:v1']
+
+# PRODUCTS=['usda:nrcs:naip:rgbn:v1']
+# PRODUCTS=['usda:naip:rgbn:v1','usda:nrcs:naip:rgbn:v1']
+
 
 
 

@@ -12,7 +12,7 @@ import image_kit.io as io
 from image_kit.handler import process_input
 import utils.helpers as h
 import utils.dlabs as dlabs
-from config import PRODUCTS_DIR, TILE_MAP_PATH
+from config import PRODUCTS_DIR, TILE_MAP_PATH, ALPHA_BAND
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
 from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
@@ -32,15 +32,19 @@ YEAR_ERROR='treecover.load: year required for DL downloads'
 #
 def image(tile_key):
     im=io.read(TILE_MAP[tile_key],return_profile=False)
-    nodata=(im[:3].sum(axis=0)==0)
+    nodata=_nodata(im)
     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
-def dl_image(tile_key,year):
+def dl_image(tile_key,year,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)
-    im=dlabs.mosaic(tile_key,year=year)
-    return process_input(im[:4],means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), (im[4]==0)
+    im=dlabs.mosaic(tile_key,year=year,alpha_band=alpha_band)
+    if alpha_band:
+        nodata=(im[4]==0)
+    else:
+        nodata=_nodata(im)
+    return process_input(im[:4],means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
 def batch(batch_keys):
@@ -50,11 +54,11 @@ def batch(batch_keys):
     return np.stack(ims),np.stack(nodatas)
 
 
-def dl_batch(batch_keys,year):
+def dl_batch(batch_keys,year,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)
     def _dl_image(tile_key):
-        return dl_image(tile_key,year)
+        return dl_image(tile_key,year,alpha_band=alpha_band)
     ims=mproc.map_with_threadpool(_dl_image,batch_keys,max_processes=len(batch_keys))
     ims,nodatas=zip(*ims)
     return np.stack(ims),np.stack(nodatas)
@@ -134,6 +138,17 @@ def tile_keys(region_name):
 
 def available_weights(model_name):
     return glob(f'{CLI_DIR}/weights/*{model_name}*')
+
+
+
+#
+# INTERNAL
+#
+def _nodata(im):
+    return (im[:3].sum(axis=0)==0)
+
+
+
 
 
 

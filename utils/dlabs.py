@@ -11,7 +11,7 @@ from descarteslabs.catalog import Image, Product, OverviewResampler
 from descarteslabs.catalog import Product
 from descarteslabs.catalog import SpectralBand, MicrowaveBand, MaskBand
 from descarteslabs.catalog import ClassBand, GenericBand
-from config import INPUT_BANDS, PRODUCTS
+from config import INPUT_BANDS, PRODUCTS, ALPHA_BAND
 
 
 #
@@ -48,11 +48,19 @@ def raster_info(aoi,bands):
 #
 # IMAGERY
 #
-def mosaic(aoi,year,products=PRODUCTS,bands=INPUT_BANDS,return_geocontext=False):
+def mosaic(
+        aoi,
+        year,
+        products=PRODUCTS,
+        bands=INPUT_BANDS,
+        alpha_band=ALPHA_BAND,
+        return_geocontext=False):
     if _is_str(aoi):
         aoi=DLTile.from_key(aoi)
     start=f'{year}-05-01'
     end=f'{year}-09-01'
+    if not alpha_band:
+        bands=bands[:4]
     sc,_=search(aoi,products=products,start_datetime=start,end_datetime=end)
     im=sc.mosaic(bands,aoi,mask_nodata=False,raster_info=False)
     if return_geocontext:
