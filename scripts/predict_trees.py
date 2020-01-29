@@ -14,19 +14,19 @@ REGION_NAME='san_francisco'
 START=None
 END=None
 YEAR=2018
-# NAIP
-INPUT_START_DATE=None
-INPUT_END_DATE=None
-# # AIRBUS
-# INPUT_START_DATE=f'{YEAR}-01-01'
-# INPUT_END_DATE=f'{YEAR}-09-01'
+# # NAIP
+# INPUT_START_DATE=None
+# INPUT_END_DATE=None
+# AIRBUS
+INPUT_START_DATE=f'{YEAR}-01-01'
+INPUT_END_DATE=f'{YEAR}-09-01'
 DATE=f'{YEAR}-07-01'
 MODEL_NAME='shallow-classifier_after-aspp_false-os_4-ss_2'
 LOCAL_SRC=False
-DEV=False
+DEV=True
 
 if DEV:
-    DATE=f'2002-07-01'
+    DATE=f'2003-07-01'
     PRODUCT_ID='wri:dev_1'
     LIM=100
     BATCH_SIZE=12
