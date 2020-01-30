@@ -1,5 +1,5 @@
 run:
-    
+
     # - shallow-classifier_after-aspp_false-os_4-ss_2:
     #     weights: false
     #     weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
@@ -51,10 +51,10 @@ run_notes:
     - shallow-classifier_after-aspp_false-os_4-ss_2:
 
         runs:
-            weights: false
-            pos_weight: 2
+            - weights: false
+              pos_weight: 2
 
-            lrs:
+              lrs:
                 - lr: 0.001
                   best_epoch: 44
                   best_loss: 0.24332001843513587
@@ -66,6 +66,15 @@ run_notes:
                   best_loss: 0.23940131794183683
                   best_acc: 0.930449475080539
                   output_weights: treecover.shallow-classifier_after-aspp_false-os_4-ss_2.best.2020-01-30T19:23:06.p
+
+            - weights: false
+              pos_weight: 3.5
+              lrs:
+                - lr: 0.001
+                  best_epoch: 49
+                  best_loss: 0.3090818940829008
+                  best_acc: 0.9166554762766912
+                  output_weights: treecover.shallow-classifier_after-aspp_false-os_4-ss_2.best.2020-01-30T20:36:34.p
 
 
 

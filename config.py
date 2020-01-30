@@ -90,6 +90,20 @@ VALUE_CATEGORIES={
 NB_CATS=len(VALUE_CATEGORIES)
 
 
+GREENSPACE_VALUE_CATEGORIES={
+    0: 'None',
+    1: 'Grass',
+    2: 'Shrub',
+    3: 'Small Tree',
+    4: 'Tree',
+    5: 'No Data',
+}
+GREENSPACE_THRESHOLDS=[0.5,2,4]
+NB_GREENSPACE_CATS=len(GREENSPACE_VALUE_CATEGORIES)
+
+
+
+
 #
 # OTHER
 #

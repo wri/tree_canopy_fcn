@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from image_kit.handler import InputTargetHandler
-from config import HEIGHT_THRESHOLD, NDVI_THRESHOLD
+from config import HEIGHT_THRESHOLD, NDVI_THRESHOLD, GREENSPACE_THRESHOLDS
 #
 # CONFIG
 #
@@ -45,6 +45,8 @@ class UrbanTreeDataset(Dataset):
             band_indices=['ndvi'],
             augment=False,
             train_mode=True,
+            height_thresholds=HEIGHT_THRESHOLD,
+            ndvi_threshold=NDVI_THRESHOLD,
             shuffle_data=shuffle):
         self.train_mode=train_mode
         self.handler=InputTargetHandler(
@@ -55,9 +57,17 @@ class UrbanTreeDataset(Dataset):
             target_squeeze=False,
             input_dtype=INPUT_DTYPE,
             target_dtype=TARGET_DTYPE)
+        self._set_height_threshods(height_thresholds)
+        self.ndvi_threshold=ndvi_threshold
         self.dataframe=dataframe
         if shuffle:
             self.dataframe=self.dataframe.sample(frac=1)
+
+    def _set_height_threshods(self,height_thresholds):
+        self.multi_threshold=isinstance(height_thresholds,list)
+        self.height_thresholds=height_thresholds
+        if self.multi_threshold:
+            self.height_ranges=self._get_height_ranges(height_thresholds)
 
 
     def __len__(self):
@@ -70,7 +80,10 @@ class UrbanTreeDataset(Dataset):
         if self.train_mode:
             inpt=self.handler.input(self.input_path,return_profile=False)
             targ=self.handler.target(self.target_path,return_profile=False)
-            targ=self._postprocess_target(targ)
+            if self.multi_threshold:
+                targ=self._postprocess_target(targ)
+            else:
+                targ=self._postprocess_target(targ)
             return {
                 'input': inpt, 
                 'target': targ }
@@ -106,10 +119,50 @@ class UrbanTreeDataset(Dataset):
     #
     # INTERNAL METHODS
     #
-    def _postprocess_target(self,targ,ht_thresh=HEIGHT_THRESHOLD,ndvi_thresh=NDVI_THRESHOLD):
-        targ = np.nan_to_num(targ)
-        targ = ((targ[0,:,:]>ht_thresh) & (targ[1,:,:]>ndvi_thresh)).astype(np.float)       
-        return np.expand_dims(targ,axis=0)
+    def _get_height_ranges(self,thresholds,min_value=0):
+        ranges=[[min_value,thresholds[0]]]
+        for b in range(0,len(thresholds)-1):
+                ranges.append([thresholds[b],thresholds[b+1]])
+        ranges.append([thresholds[-1],None])
+        return ranges
+
+        
+    def _height_test(self,height,min_height,max_height):
+        test=(height>=min_height)
+        if max_height:
+            test*=(height<max_height) 
+        return test
+
+
+    def _get_height_cat(self,height,ranges):
+        hcat=np.full_like(height,len(ranges)+1)
+        for i,(mn,mx) in enumerate(ranges,start=1):
+              hcat[height_test(height,mn,mx)]=i
+        return hcat
+
+    def _greenspace_target(self,data,height_ranges,ndvi_threshold=NDVI_THRESHOLD):
+        green=data[1]>ndvi_threshold
+        height_cat=get_height_cat(data[0],height_ranges)
+        return green*height_cat
+
+
+    def _postprocess_target(self,targ):
+        if self.multi_threshold:
+            targ=self._postprocess_multi_threshold_target(targ)
+        else:
+            targ=self._postprocess_single_threshold_target(targ)
+        return targ
+
+
+    def _postprocess_single_threshold_target(self,targ):
+        targ=np.nan_to_num(targ)
+        targ=((targ[0]>self.height_thresholds) & (targ[1]>self.ndvi_threshold))       
+        return np.expand_dims(targ,axis=0).astype(np.float)
+
+
+    def _postprocess_multi_threshold_target(self,targ):
+        # TODO
+        pass
 
 
     def _safe_value(self,k,value):
