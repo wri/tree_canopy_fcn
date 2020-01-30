@@ -22,6 +22,7 @@ class UrbanTreeDataset(Dataset):
             batch_size=DEFAULT_BATCH_SIZE,
             partial_batches=False,
             loader_kwargs={},
+            shuffle_data=False,
             **kwargs):
         r""" convenience method for loading the DataLoader directly.
             Args:
@@ -30,7 +31,11 @@ class UrbanTreeDataset(Dataset):
             Returns:
                 dataloader 
         """
-        return DataLoader(cls(dataframe,**kwargs),batch_size=batch_size,**loader_kwargs)        
+        return DataLoader(
+                cls(dataframe,shuffle_data=shuffle_data,**kwargs),
+                batch_size=batch_size,
+                shuffle=shuffle_data,
+                **loader_kwargs)        
     
 
     def __init__(self,
@@ -50,7 +55,9 @@ class UrbanTreeDataset(Dataset):
             target_squeeze=False,
             input_dtype=INPUT_DTYPE,
             target_dtype=TARGET_DTYPE)
-        self.dataframe = dataframe
+        self.dataframe=dataframe
+        if shuffle:
+            self.dataframe=self.dataframe.sample(frac=1)
 
 
     def __len__(self):

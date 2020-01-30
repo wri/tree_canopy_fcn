@@ -1,20 +1,16 @@
 import os,sys
 PROJECT_DIR=f'..'
 sys.path.append(PROJECT_DIR)
-
 from pprint import pprint
 import pandas as pd
-
 import torch
 import torch.nn as nn
-
 import torch_kit.functional as F
 from torch_kit.optimizers.radam import RAdam
 import pytorch_models.deeplab.model as dm
-
-from utils.dataloader import UrbanTreeDataset #Changed
-
 import pytorch_models.unet.model as um
+from utils.dataloader import UrbanTreeDataset
+
 
 #
 # RUN CONFIG
@@ -22,28 +18,17 @@ import pytorch_models.unet.model as um
 CROPPING=False
 FLOAT_CROPPING=18
 REGION='all'
-RESOLUTION=1 #Changed
+RESOLUTION=1
 TRAIN='train'
 VALID='valid'
 BATCH_SIZE=8
 NB_EPOCHS=50
 DEV=False
-# DEFAULT_OPTIMIZER='softmax'
 DEFAULT_OPTIMIZER='adam'
-# NB_BANDS=len(S2_BANDS)
-# CATEGORIES=[ VALUE_MAP_CLASSES[k]  for k in sorted(VALUE_MAP_CLASSES.keys()) ]
-# NB_CATEGORIES=len(CATEGORIES)
-# pprint(VALUE_MAP_CLASSES)
-# STATS=h.get_aue_data('stats','master_all',typ='s2') #Changed
 LRS=[1e-3,1e-4]
-NB_CATEGORIES = 2 #no of output channels
+NB_CATEGORIES=2
 MEANS=[101.12673535231546, 100.36417761244, 94.04471640665643, 113.85310697286442]
 STDEVS=[39.0196407883084, 35.3287659336378, 33.68392945659178, 35.37087488392215]
-DATA_ROOT = PROJECT_DIR
-
-#
-# UTILS
-#
 
 
 #
@@ -72,7 +57,6 @@ def criterion(**cfig):
         if torch.cuda.is_available():
             pos_weight=pos_weight.cuda()
     criterion=nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-#     criterion=nn.MultiLabelMarginLoss(pos_weight)
     return criterion
 
 
@@ -92,8 +76,8 @@ def loaders(**cfig):
     """
     """
     # INITAL DATASET HANDLING
-    train_df=pd.read_csv(f'{DATA_ROOT}/datasets/train_5percSMLA.csv')
-    valid_df=pd.read_csv(f'{DATA_ROOT}/datasets/valid_5percSMLA.csv')
+    train_df=pd.read_csv(f'{PROJECT_DIR}/datasets/train_5percSMLA.csv')
+    valid_df=pd.read_csv(f'{PROJECT_DIR}/datasets/valid_5percSMLA.csv')
     df=pd.concat([train_df,valid_df])
     #
     # on with the show
@@ -123,10 +107,7 @@ def loaders(**cfig):
             means=MEANS,
             stdevs=STDEVS,
             augment=augment,
-            value_map=vmap, 
             train_mode=True,
-            target_expand_axis=None,
-            UPDATE_VERSION=update_version,
             shuffle_data=shuffle)
 
 
@@ -137,10 +118,7 @@ def loaders(**cfig):
             means=MEANS,
             stdevs=STDEVS,
             augment=augment,
-            value_map=vmap, 
             train_mode=True,
-            target_expand_axis=None,
-            UPDATE_VERSION=update_version,
             shuffle_data=shuffle)
 
 
