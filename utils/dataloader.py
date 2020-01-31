@@ -47,6 +47,8 @@ class UrbanTreeDataset(Dataset):
             train_mode=True,
             height_thresholds=HEIGHT_THRESHOLD,
             ndvi_threshold=NDVI_THRESHOLD,
+            input_dtype=INPUT_DTYPE,
+            target_dtype=TARGET_DTYPE,
             shuffle_data=shuffle):
         self.train_mode=train_mode
         self.handler=InputTargetHandler(
@@ -55,13 +57,15 @@ class UrbanTreeDataset(Dataset):
             band_indices=band_indices,
             augment=augment,
             target_squeeze=False,
-            input_dtype=INPUT_DTYPE,
-            target_dtype=TARGET_DTYPE)
+            input_dtype=input_dtype,
+            target_dtype=np.float)
+        self.target_dtype=target_dtype
         self._set_height_threshods(height_thresholds)
         self.ndvi_threshold=ndvi_threshold
         self.dataframe=dataframe
-        if shuffle:
+        if shuffle_data:
             self.dataframe=self.dataframe.sample(frac=1)
+
 
     def _set_height_threshods(self,height_thresholds):
         self.multi_threshold=isinstance(height_thresholds,list)
@@ -134,13 +138,13 @@ class UrbanTreeDataset(Dataset):
             height_cat=self._get_height_categories(targ[0])
         else:
             height_cat=(targ[0]>=self.height_thresholds)
-        return (green*height_cat).astype(TARGET_DTYPE)
+        return (green*height_cat).astype(self.target_dtype)
 
 
     def _get_height_categories(self,height):
-        hcat=np.full_like(height)
-        for i,(mn,mx) in enumerate(ranges,start=1):
-              hcat[height_test(height,mn,mx)]=i
+        hcat=np.full_like(height,0)
+        for i,(mn,mx) in enumerate(self.height_ranges,start=1):
+              hcat[self._height_test(height,mn,mx)]=i
         return hcat
 
 

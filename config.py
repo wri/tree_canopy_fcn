@@ -96,12 +96,18 @@ GREENSPACE_VALUE_CATEGORIES={
     2: 'Shrub',
     3: 'Small Tree',
     4: 'Tree',
-    5: 'No Data',
+    5: 'No Data'
 }
 GREENSPACE_THRESHOLDS=[0.5,2,4]
 NB_GREENSPACE_CATS=len(GREENSPACE_VALUE_CATEGORIES)
-
-
+GREENSPACE_COLORS={
+    'None': '#fcf8e8',
+    'Grass': '#ff7b9a',
+    'Shrub': '#6f0000',
+    'Small Tree': '#add632',
+    'Tree': '#306100',
+    'No Data': '#ff0000'
+}
 
 
 #
