@@ -126,44 +126,30 @@ class UrbanTreeDataset(Dataset):
         ranges.append([thresholds[-1],None])
         return ranges
 
-        
+
+    def _postprocess_target(self,targ):
+        targ=np.nan_to_num(targ)
+        green=(targ[1]>=self.ndvi_threshold)
+        if self.multi_threshold:
+            height_cat=self._get_height_categories(targ[0])
+        else:
+            height_cat=(targ[0]>=self.height_thresholds)
+        return (green*height_cat).astype(TARGET_DTYPE)
+
+
+    def _get_height_categories(self,height):
+        hcat=np.full_like(height)
+        for i,(mn,mx) in enumerate(ranges,start=1):
+              hcat[height_test(height,mn,mx)]=i
+        return hcat
+
+
     def _height_test(self,height,min_height,max_height):
         test=(height>=min_height)
         if max_height:
             test*=(height<max_height) 
         return test
-
-
-    def _get_height_cat(self,height,ranges):
-        hcat=np.full_like(height,len(ranges)+1)
-        for i,(mn,mx) in enumerate(ranges,start=1):
-              hcat[height_test(height,mn,mx)]=i
-        return hcat
-
-    def _greenspace_target(self,data,height_ranges,ndvi_threshold=NDVI_THRESHOLD):
-        green=data[1]>ndvi_threshold
-        height_cat=get_height_cat(data[0],height_ranges)
-        return green*height_cat
-
-
-    def _postprocess_target(self,targ):
-        if self.multi_threshold:
-            targ=self._postprocess_multi_threshold_target(targ)
-        else:
-            targ=self._postprocess_single_threshold_target(targ)
-        return targ
-
-
-    def _postprocess_single_threshold_target(self,targ):
-        targ=np.nan_to_num(targ)
-        targ=((targ[0]>self.height_thresholds) & (targ[1]>self.ndvi_threshold))       
-        return np.expand_dims(targ,axis=0).astype(np.float)
-
-
-    def _postprocess_multi_threshold_target(self,targ):
-        # TODO
-        pass
-
+         
 
     def _safe_value(self,k,value):
         if isinstance(value,(int,float,str)):
