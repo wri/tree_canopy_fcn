@@ -1,0 +1,74 @@
+run:
+
+    - shallow-classifier_after-aspp_false-os_4-ss_2:
+        weights: false
+        weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
+        lrs:
+            - 0.001
+        criterion:
+            accuracy_activation: softmax
+            ignore_index: null
+            weights:
+              - 1
+              - 1.25
+              - 1.25
+              - 1.25
+              - 1.25
+        optimizer:
+            name: radam
+        loaders:         
+            batch_size: 12
+
+
+models:
+    shallow-classifier_after-aspp_false-os_4-ss_2:    
+        in_ch: 5
+        out_ch: 5
+        aspp: False
+        backbone: xception
+        classifier_position: after
+        backbone_config:
+                bottleneck_depth: 2
+                output_stride: 4
+                stride_states: [2]
+                xblock_chs: [128]
+                exit_xblock_ch: 256
+                exit_stack_chs: [512]
+
+
+run_notes:
+
+    - shallow-classifier_after-aspp_false-os_4-ss_2:
+        runs:
+            - weights:
+                - 1
+                - 2
+                - 2
+                - 2
+                - 2
+                - 0.0001
+              lrs:
+                - lr: 0.001 
+                  best_epoch: 50
+                  best_loss: 0.6044926979602911
+                  best_acc: 0.8225658276142218
+                  output_weights: greenspace.shallow-classifier_after-aspp_false-os_4-ss_2.best.2020-01-31T01:32:14.p
+            
+            - weights:
+                - 1
+                - 2
+                - 2
+                - 2
+                - 2
+                - 0.0001
+              ignore_index: 5
+              lrs:
+                - lr: 0.001
+                  best_epoch: 50
+                  best_loss: 0.5082248701499059
+                  best_acc: 0.8195751278828352
+                  output_weights: greenspace.shallow-classifier_after-aspp_false-os_4-ss_2.best.2020-01-31T05:56:44.p
+
+
+
+
