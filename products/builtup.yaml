@@ -1,0 +1,40 @@
+product:
+    id: builtup
+    readers: 
+        - 'org:wri'
+    description: >-
+        Builtup Predictions
+
+bands:
+    - name: built-up
+      description: None, water, road, 1 story, 2-3 storys, 4+ storys
+      data_range: [0,255]
+      display_range: [0,255]
+      nodata: 0
+      class_labels:
+            - None
+            - water
+            - road
+            - 1 story
+            - 2-3 storys
+            - 4+ storys
+      colormap:
+            - [252, 248, 232, 255]
+            - [0, 0, 225, 255]
+            - [255, 123, 154, 255]
+            - [111, 0, 0, 255]
+            - [173, 214, 50, 255]
+            - [48, 97, 0, 255]
+      type: class
+      data_type: Byte
+      resolution: 
+        value: 1
+        unit: meters
+    - name: scores
+      description: output probablity from model
+      data_range: [0.0,1.0]
+      display_range: [0,1.0]
+      data_type: Float32
+      resolution: 
+        value: 1
+        unit: meters

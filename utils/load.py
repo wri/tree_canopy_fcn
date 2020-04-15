@@ -12,7 +12,8 @@ import image_kit.io as io
 from image_kit.handler import process_input
 import utils.helpers as h
 import utils.dlabs as dlabs
-from config import PRODUCTS_DIR, TILE_MAP_PATH, ALPHA_BAND
+from config import PRODUCTS_DIR, REGIONS_DIR
+from config import TILE_MAP_PATH, ALPHA_BAND
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
 from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
@@ -22,7 +23,7 @@ from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
 #
 # CONSTANTS
 #
-TILE_MAP=h.read_pickle(TILE_MAP_PATH)
+# TILE_MAP=h.read_pickle(TILE_MAP_PATH)
 YEAR_ERROR='treecover.load: year required for DL downloads'
 
 
@@ -31,10 +32,10 @@ YEAR_ERROR='treecover.load: year required for DL downloads'
 #
 # IO
 #
-def image(tile_key):
-    im=io.read(TILE_MAP[tile_key],return_profile=False)
-    nodata=_nodata(im)
-    return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
+# def image(tile_key):
+#     im=io.read(TILE_MAP[tile_key],return_profile=False)
+#     nodata=_nodata(im)
+#     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
 
 
 def dl_image(tile_key,year,start=None,end=None,alpha_band=ALPHA_BAND):
@@ -104,8 +105,35 @@ def bands(product):
 
 
 #
-# META/SETUP/DATA
+# PATHS/META/SETUP/DATA
 #
+def study_area_path(region_name):
+    return f'{REGIONS_DIR}/{region_name}.geojson'
+
+
+def study_area(study_area):
+    if isinstance(study_area,str):
+        study_area=h.read_geojson(study_area_path(study_area))
+    return study_area
+
+
+def tile_keys_path(region_name,suffix=None,version=1):
+    path=f'{TILES_DIR}/{region_name}'
+    if suffix:
+        path=f'{path}-{suffix}'
+    if version:
+        path=f'{path}.v{version}'
+    return f'{path}.p'
+
+
+def tile_keys(region_name=None,suffix=None,version=1,path=None):
+    if not path:
+        path=tile_keys_path(region_name,suffix=suffix,version=version)
+    keys=h.read_pickle(path)
+    print(f'{path}:',len(keys))
+    return keys
+
+
 def meta(product,*keys):
     """ get product meta data
         - product: str 
@@ -117,10 +145,10 @@ def meta(product,*keys):
     return meta
 
 
-def model(config,init_weights=None):
+def model(config,file=MODEL_CONFIG_FILE,init_weights=None):
     """ load (eval) model from config """
     if isinstance(config,str):
-        config=model_config(config)
+        config=model_config(config,file=file)
     model_type=config.pop('type',DEFAULT_MODEL_TYPE)
     config['out_ch']=config.get('out_ch',DEFAULT_NB_INPUT_CH)
     if model_type=='dlv3p':
@@ -138,17 +166,10 @@ def model(config,init_weights=None):
 
 
 def model_config(model_name,key='models',file=MODEL_CONFIG_FILE):
-    meta=yaml.safe_load(open('{}/{}.yaml'.format(CLI_DIR,MODEL_CONFIG_FILE)))
+    meta=yaml.safe_load(open('{}/{}.yaml'.format(CLI_DIR,file)))
     if key: meta=meta[key]
     if model_name: meta=meta[model_name]
     return meta
-
-
-def tile_keys(region_name):
-    path=f'{TILES_DIR}/{region_name}.p'
-    keys=h.read_pickle(path)
-    print(f'{region_name}:',len(keys))
-    return keys
 
 
 def available_weights(model_name):

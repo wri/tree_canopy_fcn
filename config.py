@@ -9,6 +9,7 @@ PROJECT_DIR=os.path.dirname(os.path.realpath(__file__))
 DATA_DIR=f'{PROJECT_DIR}/data'
 DATASETS_DIR=f'{PROJECT_DIR}/datasets'
 PRODUCTS_DIR=f'{PROJECT_DIR}/products'
+REGIONS_DIR=f'{PROJECT_DIR}/regions'
 CLI_DIR=f'{PROJECT_DIR}/cli'
 TILES_DIR=f'{DATA_DIR}/tiles'
 
@@ -25,6 +26,14 @@ NDVI_THRESHOLD=0.1
 #
 TILE_MAP_PATH='/datadrive/UTC/Los_Angeles/shp/tile_map.pkl'
 
+
+#
+# TILING
+#
+RESOLUTION=1.0
+PAD=16
+SIZE=512
+TILESIZE=SIZE-2*PAD
 
 
 #
@@ -108,6 +117,43 @@ GREENSPACE_COLORS={
     'Tree': '#306100',
     'No Data': '#ff0000'
 }
+
+
+
+
+BUILTUP_COLORS={
+    'None': '#fcf8e8',
+    'water': '#0000ff',
+    # 'test': '#886633',
+    'road': '#ff7b9a',
+    '1 story': '#6f0000',
+    '2-3 storys': '#add632',
+    '4+ storys': '#306100',
+}
+BUILTUP_CATEGORY_THRESHOLDS=[
+            { # water  
+                'ndwi': 0.35,
+            },
+            # { # test
+            #     'ndwi': [-1e-9,0.05],
+            #     'height': [1.6,]
+            # },
+            { # road
+                'ndwi': [0.05,0.35],
+                'height': [0,1.6]
+            },
+            { # 1-story
+                'ndwi': [-0.075,0.35],
+                'height': [1.6,5]
+            },
+            { # 2-3 story
+                'ndwi': [-0.075,0.35],
+                'height': [5,10]
+            },
+            { # 4+ story
+                'ndwi': [-0.075,0.35],
+                'height': 10
+            }]
 
 
 #

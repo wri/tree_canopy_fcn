@@ -42,7 +42,7 @@ def update_permissions(prod,readers=None,owners=None,update=False):
             sleep(WAIT)
         if SAVED in str(p.state):
             status=p.update_related_objects_permissions(inherit=True)
-            return p,status
+            return p, status
         else:
             print('WARNING: saving product delayed or failed')
             return p, None
@@ -60,12 +60,14 @@ print('\n'*2)
 print('='*50)
 
 if DEV:
+
     p,dev_status=update_permissions(DEV_PRODUCT,readers=DEV_READERS,owners=DEV_OWNERS)
     if dev_status:
         print(f'{DEV_PRODUCT}:',p.readers)
         dev_status.wait_for_completion()
     dev_status
     print(dev_status)
+
 else:
 
     t_p,tree_status=update_permissions(TREE_PRODUCT,readers=READERS,owners=OWNERS)
@@ -83,7 +85,7 @@ else:
             print(f'{ULU_PRODUCT}:',u_p.readers)
             ulu_status.wait_for_completion()
         print(ulu_status)
-    
+
 print('='*50)
 print('\n'*2)
 

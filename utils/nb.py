@@ -83,19 +83,22 @@ def display_input_target_prediction(
         alpha=0.9, #0.7,
         figsize=(18,6),
         color_bar=False,
-        color_dict=None):
-#         color_dict='vmap'):
-#     inpt=proc.to_bands_last(inpt)
-#     pred=proc.to_bands_last(pred)
-#     if inpt.shape[-1]>3:
-#         inpt=inpt[:,:,:3]
-    if inpt.shape[0]>3:
-        inpt=inpt[3,:,:]
-#     if (targ.ndim>2) and (targ.shape[-1]>1):
-#         targ=targ.argmax(axis=-1)
+        color_dict='vmap'):
+    """ cstart """
+    inpt=proc.to_bands_last(inpt)
+    pred=proc.to_bands_last(pred)
+    if inpt.shape[-1]>3:
+        inpt=inpt[:,:,:3]
+    """ cend """
+    # if inpt.shape[0]>3:
+    #     inpt=inpt[3,:,:]
+    if (targ.ndim>2) and (targ.shape[-1]>1):
+        targ=targ.argmax(axis=-1)
     fig,axs=plt.subplots(1,3,figsize=figsize)
-#     inpt=inpt.astype(np.uint8)
-#     targ=targ.astype(np.uint8)
+    """ cstart """
+    # inpt=inpt.astype(np.uint8)
+    # targ=targ.astype(np.uint8)
+    """ cend """
     axs[0].imshow(inpt)
     axs[1].imshow(inpt)
     axs[2].imshow(inpt)
