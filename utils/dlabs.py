@@ -50,7 +50,7 @@ def raster_info(aoi,bands):
 #
 def mosaic(
         aoi,
-        year,
+        year=None,
         products=PRODUCTS,
         bands=INPUT_BANDS,
         alpha_band=ALPHA_BAND,
