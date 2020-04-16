@@ -70,7 +70,11 @@ def download_tileset(
                 return download_tile(src,dest,key)
             except Exception as e:
                 return f'ERROR ({dest}): {e}'
-    return mproc.map_with_threadpool(_download,keys,max_processes=max_processes)
+    if max_processes>1:
+        return mproc.map_with_threadpool(_download,keys,max_processes=max_processes)
+    else:
+        print('WARNING: MULTI-PROCESSING OFF')
+        return [_download(k) for k in keys]
 
 
 def download_tile(src,dest,tile,**kwargs):
@@ -109,7 +113,7 @@ def pipeline(
         ept_bounds,
         resolution=RESOLUTION,
         height_bounds=HEIGHT_BOUNDS,
-        groundify=True,
+        groundify=False,
         hag=True,
         outliers=True):
     pline=[{   
