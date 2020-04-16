@@ -1,5 +1,7 @@
 import os.path
+import multiprocessing as mp
 from pathlib import Path
+from pprint import pprint
 import json
 import pdal
 from descarteslabs.scenes import DLTile
@@ -17,7 +19,7 @@ EPT_PROJECTOR=pyproj.Transformer.from_proj(
     pyproj.Proj(init=EPSG4326),
     pyproj.Proj(init=EPT_SRS))
 
-
+DRY_RUN=True
 RESOLUTION=1.0
 HEIGHT_BOUNDS=[-5,1000]
 GROUNDIFY={ "type": "filters.smrf" }
@@ -31,7 +33,6 @@ OUTLIERS={
 GDAL_OUTPUT_TYPE="mean"
 GDAL_WINDOW_SIZE=3
 MAX_PROCESSES=32
-
 
 
 #
@@ -76,6 +77,58 @@ def download_tileset(
         print('WARNING: MULTI-PROCESSING OFF')
         return [_download(k) for k in keys]
 
+""" map-with-pool-experiment
+MAX_PROCESSES=mp.cpu_count()-1
+print(MAX_PROCESSES)
+def download_tileset(
+        src,
+        region,
+        keys,
+        prefix='hag',
+        version=1,
+        subdir=None,
+        identifier=None,
+        max_processes=MAX_PROCESSES,
+        overwrite=False):
+    tile_dir=paths.lidar_tile(
+            region,
+            tile_key=False,
+            prefix=prefix,
+            version=version,
+            subdir=subdir,
+            identifier=identifier)
+    Path(tile_dir).mkdir(parents=True,exist_ok=True)
+    args_list=_args_list(keys,src,region,prefix,version,subdir,identifier,overwrite)
+    if max_processes>1:
+        return mproc.map_with_pool(_download,args_list,max_processes=max_processes)
+    else:
+        print('WARNING: MULTI-PROCESSING OFF')
+        return [_download(k) for k in keys]
+
+
+def _args_list(values,*args):
+    args=list(args)
+    return [ [v]+args for v in values ]
+
+
+def _download(args):
+    key,src,region,prefix,version,subdir,identifier,overwrite=args
+    dest=paths.lidar_tile(
+        region,
+        tile_key=key,
+        prefix=prefix,
+        version=version,
+        subdir=subdir,
+        identifier=identifier)
+    if (not overwrite) and os.path.isfile(dest):
+        return dest
+    else:
+        try:
+            return download_tile(src,dest,key)
+        except Exception as e:
+            return f'ERROR ({dest}): {e}'
+"""
+
 
 def download_tile(src,dest,tile,**kwargs):
     if isinstance(tile,str):
@@ -99,9 +152,15 @@ def download(
         **kwargs):
     if not pline:
         pline=pipeline(src,dest,crs,crs_bounds,ept_bounds,**kwargs)
+    _pline=pline
     pline=pdal.Pipeline(json.dumps(pline))
     pline.validate() 
-    pline.execute()
+    if DRY_RUN:
+        print('\n'*2)
+        print(_pline)
+        print('\n'*2)
+    else:
+        pline.execute()
     return dest
 
 
@@ -160,7 +219,7 @@ def _bounds_str(bounds):
 
 def _update_pipeline(pline,value,default=None):
     if value and (value is True):
-        value=default
+        value=default.copy()
     if value:
         pline.append(value)
     return pline
