@@ -6,6 +6,7 @@ import os
 #
 HOME=os.path.expanduser('~')
 PROJECT_DIR=os.path.dirname(os.path.realpath(__file__))
+IMAGERY_ROOT_DIR='/DATA/imagery'
 DATA_DIR=f'{PROJECT_DIR}/data'
 DATASETS_DIR=f'{PROJECT_DIR}/datasets'
 PRODUCTS_DIR=f'{PROJECT_DIR}/products'

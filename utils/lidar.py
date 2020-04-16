@@ -1,9 +1,13 @@
+import os.path
+from pathlib import Path
 import json
 import pdal
 from descarteslabs.scenes import DLTile
 import pyproj
 from shapely.ops import transform
+import mproc
 from config import RESOLUTION
+import utils.paths as paths
 #
 # CONSTANTS/DEFAULTS
 #
@@ -26,12 +30,49 @@ OUTLIERS={
 }
 GDAL_OUTPUT_TYPE="mean"
 GDAL_WINDOW_SIZE=3
+MAX_PROCESSES=32
 
 
 
 #
 # PUBLIC
 #
+def download_tileset(
+        src,
+        region,
+        keys,
+        prefix='hag',
+        version=1,
+        subdir=None,
+        identifier=None,
+        max_processes=MAX_PROCESSES,
+        overwrite=False):
+    tile_dir=paths.lidar_tile(
+            region,
+            tile_key=False,
+            prefix=prefix,
+            version=version,
+            subdir=subdir,
+            identifier=identifier)
+    Path(tile_dir).mkdir(parents=True,exist_ok=True)
+    def _download(key):
+        dest=paths.lidar_tile(
+            region,
+            tile_key=key,
+            prefix=prefix,
+            version=version,
+            subdir=subdir,
+            identifier=identifier)
+        if (not overwrite) and os.path.isfile(dest):
+            return dest
+        else:
+            try:
+                return download_tile(src,dest,key)
+            except Exception as e:
+                return f'ERROR ({dest}): {e}'
+    return mproc.map_with_threadpool(_download,keys,max_processes=max_processes)
+
+
 def download_tile(src,dest,tile,**kwargs):
     if isinstance(tile,str):
         tile=DLTile.from_key(tile)
@@ -57,6 +98,7 @@ def download(
     pline=pdal.Pipeline(json.dumps(pline))
     pline.validate() 
     pline.execute()
+    return dest
 
 
 def pipeline(

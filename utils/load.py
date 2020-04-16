@@ -12,11 +12,12 @@ import image_kit.io as io
 from image_kit.handler import process_input
 import utils.helpers as h
 import utils.dlabs as dlabs
-from config import PRODUCTS_DIR, REGIONS_DIR
+import utils.paths as paths
+from config import PRODUCTS_DIR
 from config import TILE_MAP_PATH, ALPHA_BAND
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
-from config import MODEL_CONFIG_FILE, CLI_DIR, TILES_DIR
+from config import MODEL_CONFIG_FILE, CLI_DIR
 
 
 
@@ -36,8 +37,6 @@ YEAR_ERROR='treecover.load: year required for DL downloads'
 #     im=io.read(TILE_MAP[tile_key],return_profile=False)
 #     nodata=_nodata(im)
 #     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
-
-
 def dl_image(tile_key,year,start=None,end=None,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)
@@ -105,33 +104,25 @@ def bands(product):
 
 
 #
-# PATHS/META/SETUP/DATA
+# META/SETUP/DATA
 #
-def study_area_path(region_name):
-    return f'{REGIONS_DIR}/{region_name}.geojson'
-
-
 def study_area(study_area):
     if isinstance(study_area,str):
-        study_area=h.read_geojson(study_area_path(study_area))
+        study_area=h.read_geojson(paths.study_area(study_area))
     return study_area
 
 
-def tile_keys_path(region_name,suffix=None,version=1):
-    path=f'{TILES_DIR}/{region_name}'
-    if suffix:
-        path=f'{path}-{suffix}'
-    if version:
-        path=f'{path}.v{version}'
-    return f'{path}.p'
-
-
-def tile_keys(region_name=None,suffix=None,version=1,path=None):
+def tile_keys(region_name=None,suffix=None,version=1,path=None,frac=None):
     if not path:
-        path=tile_keys_path(region_name,suffix=suffix,version=version)
+        path=paths.tile_keys(region_name,suffix=suffix,version=version,frac=frac)
     keys=h.read_pickle(path)
     print(f'{path}:',len(keys))
     return keys
+
+
+def lidar_tile(region_name,tile_key,prefix='hag',version=1,return_profile=False):
+    path=paths.lidar_tile(region_name,tile_key,prefix=prefix,version=version)
+    return io.read(path,return_profile=return_profile)
 
 
 def meta(product,*keys):
