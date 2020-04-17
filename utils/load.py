@@ -106,6 +106,10 @@ def bands(product):
 #
 # META/SETUP/DATA
 #
+def aoi(region_config,*key_path):
+    return h.read_yaml(paths.aoi(region_config),*key_path)
+
+
 def study_area(study_area):
     if isinstance(study_area,str):
         study_area=h.read_geojson(paths.study_area(study_area))

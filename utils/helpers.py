@@ -1,6 +1,8 @@
 import pickle
 import re
+import json
 import geojson
+import yaml
 import numpy as np
 from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS, BATCH_SIZE
 
@@ -8,9 +10,19 @@ from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS, BATCH_SIZE
 #
 # UTILS
 #
-def save_pickle(obj,path):
+def ensure_dir(path=None,directory=None):
+    if path:
+        directory=PurePath(path).parent
+    Path(directory).mkdir(
+            parents=True,
+            exist_ok=True)
+
+
+def save_pickle(obj,path,mkdirs=True):
     """ save object to pickle file
-    """    
+    """ 
+    if mkdirs:
+        ensure_dir(path)
     with open(path,'wb') as file:
         pickle.dump(obj,file,protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -23,10 +35,49 @@ def read_pickle(path):
     return obj
 
 
-def read_geojson(path):
-    with open(path) as file:
-        data=geojson.load(file)
-    return data
+def read_yaml(path,*key_path):
+    """ read yaml file
+    path<str>: path to yaml file
+    *key_path: keys to go to in object
+    """    
+    with open(path,'rb') as file:
+        obj=yaml.safe_load(file)
+    for k in key_path:
+        obj=obj[k]
+    return obj
+
+
+def read_json(path,*key_path):
+    """ read json file
+    path<str>: path to json file
+    *key_path: keys to go to in object
+    """    
+    with open(path,'rb') as file:
+        obj=json.load(file)
+    for k in key_path:
+        obj=obj[k]
+    return obj
+
+
+def save_json(obj,path,indent=4,sort_keys=False,mkdirs=True):
+    """ save object to json file
+    """ 
+    if mkdirs:
+        ensure_dir(path)
+    with open(path,'w') as file:
+        json.dump(obj,file,indent=indent,sort_keys=sort_keys)
+
+
+def read_geojson(path,*key_path):
+    """ read geojson file
+    path<str>: path to geojson file
+    *key_path: keys to go to in object
+    """    
+    with open(path,'rb') as file:
+        obj=geojson.load(file)
+    for k in key_path:
+        obj=obj[k]
+    return obj
 
 
 def batch_list(lst,batch_size=BATCH_SIZE):

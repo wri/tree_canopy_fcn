@@ -1,6 +1,11 @@
 from config import PRODUCTS_DIR, IMAGERY_ROOT_DIR
-from config import TILES_DIR, GEOMETRY_DIR
+from config import TILES_DIR, GEOMETRY_DIR, AOI_DIR
 import descarteslabs as dl
+
+
+
+def aoi(region_config):
+    return f'{AOI_DIR}/{region_config}.yaml'
 
 
 def study_area(region_name):
