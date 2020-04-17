@@ -20,7 +20,7 @@ EPT_PROJECTOR=pyproj.Transformer.from_proj(
     pyproj.Proj(init=EPT_SRS))
 
 RESOLUTION=1.0
-HEIGHT_BOUNDS=[-5,1000]
+HEIGHT_BOUNDS=[-3,400]
 GROUNDIFY={ "type": "filters.smrf" }
 HAG={ "type": "filters.hag" } 
 OUTLIERS={   
