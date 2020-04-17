@@ -18,14 +18,14 @@ import utils.lidar as lidar
 #
 # RUN CONFIG
 #
-LIM=None
+LIM=4
 FETCH_TILES=False
-REGION="LA-core"
+REGION="LA-dev"
 USGS_FOLDER="USGS_LPC_CA_LosAngeles_2016_LAS_2018"
 SAMPLE_FRAC=0.2
 USGS_ROOT="https://s3-us-west-2.amazonaws.com/usgs-lidar-public"
 EPT_URL=f"{USGS_ROOT}/{USGS_FOLDER}"
-MAX_PROCESSES=32
+MAX_PROCESSES=1
 
 
 
