@@ -1,10 +1,10 @@
-from config import PRODUCTS_DIR, REGIONS_DIR, IMAGERY_ROOT_DIR
-from config import TILES_DIR, REGIONS_DIR, IMAGERY_ROOT_DIR
+from config import PRODUCTS_DIR, IMAGERY_ROOT_DIR
+from config import TILES_DIR, GEOMETRY_DIR
 import descarteslabs as dl
 
 
 def study_area(region_name):
-    return f'{REGIONS_DIR}/{region_name}.geojson'
+    return f'{GEOMETRY_DIR}/{region_name}.geojson'
 
 
 def tile_keys(region_name,suffix=None,version=1,frac=None):

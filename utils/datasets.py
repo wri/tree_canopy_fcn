@@ -2,7 +2,6 @@ import re
 from random import shuffle
 import utils.helpers as h
 from descarteslabs.scenes import DLTile
-from config import REGIONS_DIR,TILES_DIR
 from config import RESOLUTION, TILESIZE, PAD
 import utils.paths as paths
 import utils.load as load
