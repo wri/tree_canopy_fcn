@@ -10,6 +10,7 @@ import utils.load as load
 #
 def save_master_tile_list(
         region_name,
+        geometry=None,
         version=1,
         suffix='master',
         split=True,
@@ -21,6 +22,7 @@ def save_master_tile_list(
     dest=paths.tile_keys(region_name,suffix=suffix,version=version)
     out=_fetch_tiles(
             region_name,
+            geometry=geometry,
             dest=dest,
             resolution=resolution,
             tilesize=tilesize,
@@ -98,13 +100,14 @@ def _split_tile_keys(keys,valid_frac=0.2,test_frac=0.1):
 
 def _fetch_tiles(
         region_name,
+        geometry=None,
         dest=None,
         resolution=RESOLUTION,
         tilesize=TILESIZE,
         pad=PAD,
         return_tiles=True,
         return_keys=False):
-    study_area=load.study_area(region_name)
+    study_area=load.study_area(geometry or region_name)
     tiles=DLTile.from_shape(
         shape=study_area, 
         resolution=RESOLUTION, 

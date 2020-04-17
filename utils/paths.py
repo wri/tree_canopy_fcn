@@ -8,8 +8,8 @@ def aoi(region_config):
     return f'{AOI_DIR}/{region_config}.yaml'
 
 
-def study_area(region_name):
-    return f'{GEOMETRY_DIR}/{region_name}.geojson'
+def study_area(geometry_name):
+    return f'{GEOMETRY_DIR}/{geometry_name}.geojson'
 
 
 def tile_keys(region_name,suffix=None,version=1,frac=None):
