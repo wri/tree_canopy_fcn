@@ -37,6 +37,7 @@ YEAR_ERROR='treecover.load: year required for DL downloads'
 #     im=io.read(TILE_MAP[tile_key],return_profile=False)
 #     nodata=_nodata(im)
 #     return process_input(im,means=MEANS,stdevs=STDEVS,band_indices=['ndvi']), nodata
+
 def dl_image(tile_key,year,start=None,end=None,alpha_band=ALPHA_BAND):
     if not year:
         raise ValueError(YEAR_ERROR)

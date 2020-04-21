@@ -1,0 +1,5 @@
+geometry: USGS_LPC_PR_PuertoRico_2016_LAS_2017
+subdir: USGS_LPC_PR_PuertoRico_2016_LAS_2017
+ept_folder: USGS_LPC_PR_PuertoRico_2016_LAS_2017
+ept_root: https://s3-us-west-2.amazonaws.com/usgs-lidar-public
+sample_frac: 0.2

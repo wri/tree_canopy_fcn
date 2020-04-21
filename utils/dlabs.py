@@ -56,6 +56,8 @@ def mosaic(
         alpha_band=ALPHA_BAND,
         start=None,
         end=None,
+        dest=None,
+        dry_run=False,
         return_geocontext=False):
     if _is_str(aoi):
         aoi=DLTile.from_key(aoi)
@@ -65,14 +67,25 @@ def mosaic(
         bands=bands[:4]
     sc,_=search(aoi,products=products,start_datetime=start,end_datetime=end)
     if sc:
-        im=sc.mosaic(bands,aoi,mask_nodata=False,raster_info=False)
+        if dest:
+            if dry_run:
+                out=f'{dest}: {len(sc)}'
+            else:
+                out=sc.download_mosaic(
+                    bands,
+                    aoi,
+                    dest=dest)
+        else:
+            if dry_run:
+                out=len(sc)
+            else:
+                out=sc.mosaic(bands,aoi,mask_nodata=False,raster_info=False)
     else:
-        im=False
+        out=False
     if return_geocontext:
-        return im, aoi
+        return out, aoi
     else:
-        return im
-
+        return out
 
 
 
