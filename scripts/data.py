@@ -4,6 +4,7 @@
 ROOT_PATH='/home/ericp/tree_canopy_fcn/repo'
 import sys
 sys.path.append(ROOT_PATH)
+import os.path
 from pprint import pprint
 import pandas as pd
 import mproc
@@ -43,7 +44,7 @@ ALPHA_BAND=False
 DSET_TYPES=['train','valid','test']
 DATA_ROOT='/DATA/imagery'
 MAX_PROCESSES=8
-
+OVERWRITE=False
 
 
 #
@@ -72,7 +73,7 @@ def download_lidar_tiles(
     return paths, errors
 
 
-def _ab_meta(product,tile_key,year,dset_type):
+def _ab_meta(product,tile_key,year,dset_type,region,version):
     if product=='spot':
         product_prefix=SPOT_PREFIX
         product_dir=SPOT_DIR
@@ -81,33 +82,41 @@ def _ab_meta(product,tile_key,year,dset_type):
         product_prefix=PLEIADES_PREFIX
         product_dir=PLEIADES_DIR
         products=PLEIADES_PRODUCTS
-    return products, f'{DATA_ROOT}/{product_dir}/{product_prefix}_{tile_key}_{year}-{dset_type}.tif'
+    directory=f'{DATA_ROOT}/{region}/v{version}/{product_dir}'
+    path=f'{directory}/{product_prefix}_{tile_key}_{year}-{dset_type}.tif'
+    return products, path
 
 
 def airbus_download_tile_for_year(
         tile_key,
         product,
+        region,
         year,
+        version,
         dset_type,
-        dry_run=False):
-    products,dest=_ab_meta(product,tile_key,year,dset_type)
-    h.ensure_dir(dest)
+        dry_run=False,
+        overwrite=OVERWRITE):
     out=None
     error=False
     error_msg=None
-    try:
-        out=dlabs.mosaic(        
-            tile_key,
-            products=products,
-            bands=INPUT_BANDS,
-            alpha_band=ALPHA_BAND,
-            start=f'{year}-01-01',
-            end=f'{year+1}-01-01',
-            dest=dest,
-            dry_run=dry_run)
-    except Exception as e:
-        error=True
-        error_msg=str(e)
+    products,dest=_ab_meta(product,tile_key,year,dset_type,region,version)
+    if (not overwrite) and os.path.isfile(dest):
+        out='FILE_EXISTS: SKIPPING DOWNLOAD'
+    else:
+        h.ensure_dir(dest)
+        try:
+            out=dlabs.mosaic(        
+                tile_key,
+                products=products,
+                bands=INPUT_BANDS,
+                alpha_band=ALPHA_BAND,
+                start=f'{year}-01-01',
+                end=f'{year+1}-01-01',
+                dest=dest,
+                dry_run=dry_run)
+        except Exception as e:
+            error=True
+            error_msg=str(e)
     if out or error:
         return {
             'tile_key': tile_key,
@@ -121,20 +130,30 @@ def airbus_download_tile_in_range(
         tile_key,
         dset_type,
         product,
+        region,
+        version,
         year_start=YEAR_START,
         year_end=YEAR_END,
-        dry_run=False):
+        dry_run=False,
+        overwrite=OVERWRITE):
     out=None
     for year in range(year_start,year_end+1):
         out=airbus_download_tile_for_year(
             tile_key,
             product,
+            region,
             year,
+            version,
             dset_type,
             dry_run)
         if out: break;
     if not out:
-        out={'tile_key': tile_key, 'year': None, 'path': None, 'error': False, 'error_msg': None}
+        out={
+            'tile_key': tile_key, 
+            'year': None, 
+            'path': None, 
+            'error': False, 
+            'error_msg': None}
     return out
 
 
@@ -266,6 +285,11 @@ def lidar(region_config,lim=None,dry_run=False):
     help='dry_run',
     default=False,
     type=bool)
+@click.option(
+    '--overwrite',
+    help='overwrite',
+    default=OVERWRITE,
+    type=bool)
 def airbus(
         region_config,
         product=DEFALUT_AB_PRODUCT,
@@ -273,7 +297,8 @@ def airbus(
         end=YEAR_END,
         version=DEFALUT_VERSION,
         lim=None,
-        dry_run=False):
+        dry_run=False,
+        overwrite=OVERWRITE):
     print('PRODUCT:',product)
     aoi_config=load.aoi(region_config)
     print('AOI:')
@@ -287,9 +312,12 @@ def airbus(
                 key,
                 typ,
                 product,
+                region_config,
+                version,
                 start,
                 end,
-                dry_run)
+                dry_run,
+                overwrite=overwrite)
         out=mproc.map_with_threadpool(_download,keys,max_processes=MAX_PROCESSES)
         df=pd.DataFrame(out)
         log_path=f'{product}-{typ}_download.csv'
