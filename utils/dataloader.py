@@ -17,83 +17,70 @@ TARGET_DTYPE=np.float
 DEFAULT_BATCH_SIZE=8
 HAG_MIN=-3
 HAG_MIN_VALUE=0
-CATEGORY_BOUNDS=[
+CATEGORY_BOUNDS=[   
     {
-        'category': 'road',
-        'value': 6,
-        'hex': '#B7AABB',
-        'ndwi': [-0.5,0.35],
-        'height': {'max': 1.6}
-    },
-    {
-        'category': '1-story',
-        'value': 7,
-        'hex': '#EA061B',
-        'ndwi': [-0.3,0.35],
-        'height': [1.6,5]
-    },
-    {
-        'category': '2to3-story',
-        'value': 8,
-        'hex': '#EA0675',
-        'ndwi': [-0.3,0.35],
-        'height': [5,10]
-    },
-    {
-        'category': '4+-story',
-        'value': 9,
-        'hex': '#f03df8',
-        'ndwi': [-0.3,0.35],
-        'height': 10
+        'category': 'water',
+        # 'value': 1,
+        'hex': '#56CEFB',
+        'ndwi': 0.35,
     },
     {
         'category': 'grass',
-        'value': 2,
-        'hex':'#D2EA06',
-        'ndvi': 0.25,
+        # 'value': 2,
+        'hex':'#ffff00',
+        'ndvi': 0.2,
         'height': {'max': 0.5}
     },
     {
         'category': 'shrub',
-        'value': 3,
-        'hex':'#FAFA04',
-        'ndvi': 0.3,
+        # 'value': 3,
+        'hex':'#cc9900',
+        'ndvi': 0.2,
         'height': [0.5,2]
     },
     {
         'category': 'tree',
-        'value': 4,
+        # 'value': 4,
         'hex':'#00ff00',
-        'ndvi': 0.3,
+        'ndvi': 0.25,
         'height': [2,4]
     },
     {
         'category': 'big-tree',
-        'value': 5,
+        # 'value': 5,
         'hex': '#006400',
-        'ndvi': 0.3,
+        'ndvi': 0.25,
         'height': 4
     },
     {
-        'category': 'water',
-        'value': 1,
-        'hex': '#56CEFB',
-        'ndwi': 0.35,
-    }
-]
-
-"""
-    {
         'category': 'road',
-        'value': 6,
-        'hex': '#B7AABB',
-        'or': {
-            'ndvi': xxx,
-            'ndwi': yyy
-        }
+        # 'value': 6,
+        'hex': '#ffffff',
+        'ndvi': {'max': 0},
         'height': {'max': 1.6}
     },
-"""
+    {
+        'category': '1-story',
+        # 'value': 7,
+        'hex': '#6600ff',
+        'ndvi': {'max': 0},
+        'height': [1.6,5]
+    },
+    {
+        'category': '2to3-story',
+        # 'value': 8,
+        'hex': '#ff0000',
+        'ndvi': {'max': 0},
+        'height': [5,10]
+    },
+    {
+        'category': '4+-story',
+        # 'value': 9,
+        'hex': '#ff00ff',
+        'ndvi': {'max': 0},
+        'height': 10
+    }
+]
 
 # def stretch(im,min_value=-1,max_value=1):
 #     mn=im.min()
@@ -127,6 +114,9 @@ CATEGORY_BOUNDS=[
 #
 #
 #
+AB_MEANS=[100.83741572079242, 100.4938850966076, 86.63500986931308, 118.72746674454453]
+AB_STDEVS=[42.098045003124774, 39.07388735786421, 39.629813116928815, 34.72351480486876]
+
 class HeightIndexDataset(Dataset):
     """dataset from height and spectral indices"""
     @classmethod
@@ -159,13 +149,18 @@ class HeightIndexDataset(Dataset):
             stdevs=None,
             augment=False,
             band_indices=['ndvi','ndwi'],
-            center_indices=True,
+            center_indices=False,
             category_bounds=CATEGORY_BOUNDS,
             input_band_count=4,
             input_dtype=INPUT_DTYPE,
             target_dtype=TARGET_DTYPE,
             hag_min=HAG_MIN,
             hag_min_value=HAG_MIN_VALUE,
+            cropping=None,
+            float_cropping=None,
+            width=None,
+            height=None,
+            example_path=None,
             no_data_value=0,
             train_mode=False,
             hag_property=True,
@@ -176,6 +171,11 @@ class HeightIndexDataset(Dataset):
             stdevs=stdevs,
             band_indices=band_indices,
             augment=augment,
+            cropping=cropping,
+            float_cropping=float_cropping,
+            width=width,
+            height=height,
+            example_path=example_path,
             target_squeeze=False,
             input_dtype=input_dtype,
             target_dtype=np.float)
@@ -196,6 +196,7 @@ class HeightIndexDataset(Dataset):
 
     def __getitem__(self, index):
         self.select_data(index)
+        self.handler.set_window()
         self.handler.set_augmentation()
         if self.train_mode:
             inpt=self.handler.input(self.rgbn_path,return_profile=False)
@@ -254,7 +255,9 @@ class HeightIndexDataset(Dataset):
         else:
             im = inpt[band_index]
         if self.center_indices:
-            return (im-im.mean())/im.std()
+            return (im-im.mean())#/im.std()
+        else:
+            return im
 
 
     def _set_hag_properties(self,hag_min,hag_min_value,hag_property):
