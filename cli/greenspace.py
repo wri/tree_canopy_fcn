@@ -59,7 +59,7 @@ def criterion(**cfig):
         weights=torch.Tensor(weights)
         if torch.cuda.is_available():
             weights=weights.cuda()
-    if ignore_index:
+    if ignore_index is not None:
         criterion=nn.CrossEntropyLoss(weight=weights,ignore_index=ignore_index)
     else:
         criterion=nn.CrossEntropyLoss(weight=weights)
