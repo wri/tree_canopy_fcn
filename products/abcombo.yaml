@@ -1,0 +1,48 @@
+product:
+    id: abcombo
+    readers: 
+        - 'org:wri'
+    description: >-
+        Combo Predictions
+
+bands:
+    - name: abcombo
+      description: None, water, road, 1 story, 2-3 storys, 4+ storys
+      data_range: [0,255]
+      display_range: [0,255]
+      nodata: 0
+      class_labels:
+            - water
+            - grass
+            - shrub
+            - tree
+            - big-tree
+            - road
+            - 1-story
+            - 2to3-story
+            - 4+-story
+            - None
+      colormap:
+            - [0, 0, 0, 255]
+            - [0, 0, 255, 255]
+            - [0, 255, 0, 255]
+            - [50, 200, 50, 255]
+            - [0, 255, 200, 255]
+            - [0, 200, 0, 255]
+            - [255, 123, 154, 255]
+            - [111, 0, 0, 255]
+            - [173, 214, 50, 255]
+            - [48, 97, 0, 255]
+      type: class
+      data_type: Byte
+      resolution: 
+        value: 1
+        unit: meters
+    - name: scores
+      description: output probablity from model
+      data_range: [0.0,1.0]
+      display_range: [0,1.0]
+      data_type: Float32
+      resolution: 
+        value: 1
+        unit: meters
