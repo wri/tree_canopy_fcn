@@ -32,17 +32,21 @@ DEFALUT_VERSION=1
 
 YEAR_START=2015
 YEAR_END=2018
-DEFALUT_AB_PRODUCT='plieades'
-PLEIADES_PRODUCTS=['airbus:oneatlas:phr:v2']
+DEFALUT_PRODUCT='plieades'
+PLEIADES_PRODUCTS=['dlabs:oneatlas:phr:v2']
 PLEIADES_DIR='pleiades'
 PLEIADES_PREFIX='ab_pleiades'
-SPOT_PRODUCTS=['airbus:oneatlas:spot:v2']
+SPOT_PRODUCTS=['dlabs:oneatlas:spot:v2']
 SPOT_DIR='spot'
 SPOT_PREFIX='ab_spot'
+NAIP_PREFIX='naip'
+NAIP_DIR='naip'
+NAIP_PRODUCTS=['usda:naip:rgbn:v1','usda:nrcs:naip:rgbn:v1']
 INPUT_BANDS=['red', 'green', 'blue', 'nir', 'alpha']
 ALPHA_BAND=False
 DSET_TYPES=['train','valid','test']
 DATA_ROOT='/DATA/imagery'
+LOG_DIR='/DATA/download-csvs'
 MAX_PROCESSES=8
 OVERWRITE=False
 
@@ -73,21 +77,30 @@ def download_lidar_tiles(
     return paths, errors
 
 
-def _ab_meta(product,tile_key,year,dset_type,region,version):
+def _dl_meta(product,tile_key,year,dset_type,region,version):
     if product=='spot':
         product_prefix=SPOT_PREFIX
         product_dir=SPOT_DIR
         products=SPOT_PRODUCTS
-    else:
+    elif product=='plieades':
         product_prefix=PLEIADES_PREFIX
         product_dir=PLEIADES_DIR
         products=PLEIADES_PRODUCTS
+    elif product=='naip':
+        product_prefix=NAIP_PREFIX
+        product_dir=NAIP_DIR
+        products=NAIP_PRODUCTS
+    else:
+        dlid,name=product.split(',')
+        product_prefix=name
+        product_dir=name
+        products=[dlid]
     directory=f'{DATA_ROOT}/{region}/v{version}/{product_dir}'
     path=f'{directory}/{product_prefix}_{tile_key}_{year}-{dset_type}.tif'
     return products, path
 
 
-def airbus_download_tile_for_year(
+def dlabs_download_tile_for_year(
         tile_key,
         product,
         region,
@@ -99,7 +112,7 @@ def airbus_download_tile_for_year(
     out=None
     error=False
     error_msg=None
-    products,dest=_ab_meta(product,tile_key,year,dset_type,region,version)
+    products,dest=_dl_meta(product,tile_key,year,dset_type,region,version)
     if (not overwrite) and os.path.isfile(dest):
         out='FILE_EXISTS: SKIPPING DOWNLOAD'
     else:
@@ -126,7 +139,7 @@ def airbus_download_tile_for_year(
             'error_msg': error_msg}
 
 
-def airbus_download_tile_in_range(
+def dlabs_download_tile_in_range(
         tile_key,
         dset_type,
         product,
@@ -138,14 +151,15 @@ def airbus_download_tile_in_range(
         overwrite=OVERWRITE):
     out=None
     for year in range(year_start,year_end+1):
-        out=airbus_download_tile_for_year(
+        out=dlabs_download_tile_for_year(
             tile_key,
             product,
             region,
             year,
             version,
             dset_type,
-            dry_run)
+            dry_run,
+            overwrite=overwrite)
         if out: break;
     if not out:
         out={
@@ -252,13 +266,13 @@ def lidar(region_config,lim=None,dry_run=False):
 
 
 @click.command(
-    help='airbus: region_name',
+    help='dlabs: region_name',
     context_settings=ARG_KWARGS_SETTINGS ) 
 @click.argument('region_config',type=str)
 @click.option(
     '--product',
-    help='plieades or spot',
-    default=DEFALUT_AB_PRODUCT,
+    help='plieades, spot, naip or comma separated string="descarteslabs_product_id,name"',
+    default=DEFALUT_PRODUCT,
     type=str)
 @click.option(
     '--start',
@@ -290,9 +304,9 @@ def lidar(region_config,lim=None,dry_run=False):
     help='overwrite',
     default=OVERWRITE,
     type=bool)
-def airbus(
+def descarteslabs_product_id(
         region_config,
-        product=DEFALUT_AB_PRODUCT,
+        product=DEFALUT_PRODUCT,
         start=YEAR_START,
         end=YEAR_END,
         version=DEFALUT_VERSION,
@@ -303,12 +317,13 @@ def airbus(
     aoi_config=load.aoi(region_config)
     print('AOI:')
     pprint(aoi_config)
+    dfs=[]
     for typ in DSET_TYPES:
         print()
         keys=load.tile_keys(region_config,typ,frac=aoi_config['sample_frac'])[:lim]
         print(f'DOWLOADING {typ}({len(keys)}):')
         def _download(key):
-            return airbus_download_tile_in_range(
+            return dlabs_download_tile_in_range(
                 key,
                 typ,
                 product,
@@ -322,15 +337,18 @@ def airbus(
         df=pd.DataFrame(out)
         log_path=f'{product}-{typ}_download.csv'
         df.to_csv(log_path,index=False)
+        dfs.append(df)
         print('\t',log_path)
-
+    df=pd.concat(dfs)
+    log_path=f'{LOG_DIR}/{product}-{region_config}.csv'
+    df.to_csv(log_path,index=False)
 
 
 
 
 cli.add_command(tilesets)
 cli.add_command(lidar)
-cli.add_command(airbus)
+cli.add_command(descarteslabs)
 if __name__ == "__main__":
     cli()
 
