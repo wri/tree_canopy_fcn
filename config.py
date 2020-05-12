@@ -104,6 +104,13 @@ NAIP_WATER_CATEGORY_BOUNDS=[
 
 NAIP_GREEN_CATEGORY_BOUNDS=[   
     {
+        'category': 'bare_ground',
+        # 'value': 2,
+        'hex':'#FB8B04',
+        'ndvi': [0.025,0.15],
+        'height': {'max': 0.5}
+    },
+    {
         'category': 'grass',
         # 'value': 2,
         'hex':'#ffff00',

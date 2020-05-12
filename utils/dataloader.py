@@ -20,12 +20,11 @@ HAG_MIN_VALUE=0
 
 
 
-
 class HeightIndexDataset(Dataset):
     NAIP_GREEN='naip_green'
     NAIP_BU='naip_bu'
     NAIP_ALL='naip_all'
-
+    NO_DATA_LAST='no_data_last'
 
     """dataset from height and spectral indices"""
     @classmethod
@@ -59,8 +58,8 @@ class HeightIndexDataset(Dataset):
             augment=False,
             input_bands=None,
             band_indices=['ndvi','ndwi'],
+            has_input_rgbn=True,
             input_bounds=None,
-            center_indices=False,
             category_bounds='naip_green',
             input_band_count=4,
             input_dtype=INPUT_DTYPE,
@@ -72,11 +71,12 @@ class HeightIndexDataset(Dataset):
             width=None,
             height=None,
             example_path=None,
-            no_data_value=0,
+            no_data_value='no_data_last',
             train_mode=False,
             hag_property=True,
             shuffle_data=False):
         self.train_mode=train_mode
+        self.has_input_rgbn=has_input_rgbn
         self.handler=InputTargetHandler(
             means=means,
             stdevs=stdevs,
@@ -94,10 +94,12 @@ class HeightIndexDataset(Dataset):
             target_dtype=np.float)
         self._set_spectral_bands(band_indices,input_band_count)
         self._set_hag_properties(hag_min,hag_min_value,hag_property)
-        self.center_indices=center_indices
-        self.no_data_value=no_data_value
         self.target_dtype=target_dtype
         self.category_bounds=self._category_bounds(category_bounds)
+        if no_data_value==NO_DATA_LAST:
+            self.no_data_value=len(category_bounds)
+        else:
+            self.no_data_value=no_data_value
         self.dataframe=dataframe
         if shuffle_data:
             self.dataframe=self.dataframe.sample(frac=1)
@@ -111,36 +113,40 @@ class HeightIndexDataset(Dataset):
         self.select_data(index)
         self.handler.set_window()
         self.handler.set_augmentation()
+        inpt,inpt_p=self.handler.input(self.input_path,return_profile=True)
+        if self.has_input_rgbn:
+            rgbn, rgbn_p=inpt, inpt_p
+        else:
+            rgbn, rgbn_p=self.handler.input(self.rgbn_path,return_profile=True)
+        hag,hag_p=self._load_hag(self.hag_path,return_profile=True)
+        targ=self._build_target(inpt,hag)        
         if self.train_mode:
-            inpt=self.handler.input(self.rgbn_path,return_profile=False)
-            hag=self._load_hag(self.hag_path,return_profile=False)
-            targ=self._build_target(inpt,hag)
             return {
                 'input': inpt, 
                 'target': targ }
         else:
-            inpt,inpt_p=self.handler.input(self.rgbn_path,return_profile=True)
-            hag,hag_p=self._load_hag(self.hag_path,return_profile=True)
-            targ=self._build_target(inpt,hag)
-            self.input=inpt
-            self.targ=targ
             self.ndvi=self._get_spectral_band(inpt,'ndvi')
             self.ndwi=self._get_spectral_band(inpt,'ndwi')
             row=self._clean(self.row.to_dict())
             inpt_p=self._clean(inpt_p)
+            rgbn_p=self._clean(rgbn_p)
             hag_p=self._clean(hag_p)
             itm={
                 'input': inpt, 
                 'target': targ,
+                'hag': hag,
+                'rgbn': rgbn,
                 'index': self.index,
+                'row': row,
+                'input_path': self.input_path,
                 'rgbn_path': self.rgbn_path,
                 'hag_path': self.hag_path,
                 'k': self.handler.k,
                 'flip': self.handler.flip,
-                'row': row,
-                'rbgn_profile': inpt_p,
+                'input_profile': inpt_p,
+                'rgbn_profile': rgbn_p,
                 'hag_profile': hag_p 
-                }
+            }
         return itm
 
 
@@ -149,6 +155,10 @@ class HeightIndexDataset(Dataset):
         self.row=self.dataframe.iloc[index]
         self.rgbn_path=self.row.rgbn_path
         self.hag_path=self.row.hag_path
+        if self.has_input_rgbn:
+            self.input_path=self.row.input_path
+        else:
+            self.input_path=self.row.rgbn_path
 
 
     #
@@ -157,13 +167,13 @@ class HeightIndexDataset(Dataset):
     def _category_bounds(self,category_bounds):
         if isinstance(category_bounds,str):
             if category_bounds==HeightIndexDataset.NAIP_GREEN:
-                category_bounds=NAIP_GREEN_CATEGORY_BOUNDS
-            elif category_bounds==HeightIndexDataset.NAIP_BU
-                category_bounds=NAIP_BU_CATEGORY_BOUNDS
-            elif category_bounds==HeightIndexDataset.NAIP_ALL
-                category_bounds=NAIP_WATER_CATEGORY_BOUNDS
-                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS
-                category_bounds+=NAIP_BU_CATEGORY_BOUNDS
+                category_bounds=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+            elif category_bounds==HeightIndexDataset.NAIP_BU:
+                category_bounds=NAIP_BU_CATEGORY_BOUNDS.copy()
+            elif category_bounds==HeightIndexDataset.NAIP_ALL:
+                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
             else:
                 raise ValueError(f'{category_bounds} is not valid')
         return category_bounds
@@ -182,10 +192,7 @@ class HeightIndexDataset(Dataset):
             im = indices.index(inpt,index_name)
         else:
             im = inpt[band_index]
-        if self.center_indices:
-            return (im-im.mean())#/im.std()
-        else:
-            return im
+        return im
 
 
     def _set_hag_properties(self,hag_min,hag_min_value,hag_property):
