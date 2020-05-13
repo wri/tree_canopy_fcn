@@ -98,29 +98,39 @@ NAIP_WATER_CATEGORY_BOUNDS=[
         'category': 'water',
         # 'value': 1,
         'hex': '#56CEFB',
-        'ndwi': 0.35,
+        'ndwi': 0.30,
     }]
 
 
-NAIP_GREEN_CATEGORY_BOUNDS=[   
+NAIP_BARE_CATEGORY_BOUNDS=[   
     {
         'category': 'bare_ground',
         # 'value': 2,
-        'hex':'#FB8B04',
+        'hex':'#900C3F',
         'ndvi': [0.025,0.15],
         'height': {'max': 0.5}
     },
     {
         'category': 'grass',
         # 'value': 2,
-        'hex':'#ffff00',
+        'hex':'#F9FC06',
         'ndvi': 0.2,
+        'height': {'max': 0.5}
+    },
+]
+
+NAIP_GREEN_CATEGORY_BOUNDS=[   
+    {
+        'category': 'openspace',
+        # 'value': 2,
+        'hex':'#F9FC06',
+        'ndvi': 0.025,
         'height': {'max': 0.5}
     },
     {
         'category': 'shrub',
         # 'value': 3,
-        'hex':'#cc9900',
+        'hex':'#FFA500',
         'ndvi': 0.2,
         'height': [0.5,2]
     },

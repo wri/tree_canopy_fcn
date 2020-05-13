@@ -23,6 +23,7 @@ HAG_MIN_VALUE=0
 class HeightIndexDataset(Dataset):
     NAIP_GREEN='naip_green'
     NAIP_BU='naip_bu'
+    NAIP_WATER='naip_water'
     NAIP_ALL='naip_all'
     NO_DATA_LAST='no_data_last'
 
@@ -58,7 +59,7 @@ class HeightIndexDataset(Dataset):
             augment=False,
             input_bands=None,
             band_indices=['ndvi','ndwi'],
-            has_input_rgbn=True,
+            target_rgbn=True,
             input_bounds=None,
             category_bounds='naip_green',
             input_band_count=4,
@@ -71,12 +72,12 @@ class HeightIndexDataset(Dataset):
             width=None,
             height=None,
             example_path=None,
-            no_data_value='no_data_last',
+            no_data_value=NO_DATA_LAST,
             train_mode=False,
             hag_property=True,
             shuffle_data=False):
         self.train_mode=train_mode
-        self.has_input_rgbn=has_input_rgbn
+        self.target_rgbn=target_rgbn
         self.handler=InputTargetHandler(
             means=means,
             stdevs=stdevs,
@@ -96,10 +97,12 @@ class HeightIndexDataset(Dataset):
         self._set_hag_properties(hag_min,hag_min_value,hag_property)
         self.target_dtype=target_dtype
         self.category_bounds=self._category_bounds(category_bounds)
-        if no_data_value==NO_DATA_LAST:
-            self.no_data_value=len(category_bounds)
-        else:
+        if no_data_value==HeightIndexDataset.NO_DATA_LAST:
+            self.no_data_value=len(self.category_bounds)
+        elif no_data_value:
             self.no_data_value=no_data_value
+        else:
+            self.no_data_value=0
         self.dataframe=dataframe
         if shuffle_data:
             self.dataframe=self.dataframe.sample(frac=1)
@@ -114,19 +117,17 @@ class HeightIndexDataset(Dataset):
         self.handler.set_window()
         self.handler.set_augmentation()
         inpt,inpt_p=self.handler.input(self.input_path,return_profile=True)
-        if self.has_input_rgbn:
-            rgbn, rgbn_p=inpt, inpt_p
-        else:
+        if self.target_rgbn:
             rgbn, rgbn_p=self.handler.input(self.rgbn_path,return_profile=True)
+        else:
+            rgbn, rgbn_p=inpt, inpt_p
         hag,hag_p=self._load_hag(self.hag_path,return_profile=True)
-        targ=self._build_target(inpt,hag)        
+        targ=self._build_target(rgbn,hag)        
         if self.train_mode:
             return {
                 'input': inpt, 
                 'target': targ }
         else:
-            self.ndvi=self._get_spectral_band(inpt,'ndvi')
-            self.ndwi=self._get_spectral_band(inpt,'ndwi')
             row=self._clean(self.row.to_dict())
             inpt_p=self._clean(inpt_p)
             rgbn_p=self._clean(rgbn_p)
@@ -153,12 +154,12 @@ class HeightIndexDataset(Dataset):
     def select_data(self,index):
         self.index=index
         self.row=self.dataframe.iloc[index]
-        self.rgbn_path=self.row.rgbn_path
+        self.input_path=self.row.input_path
         self.hag_path=self.row.hag_path
-        if self.has_input_rgbn:
-            self.input_path=self.row.input_path
+        if self.target_rgbn:
+            self.rgbn_path=self.row.rgbn_path
         else:
-            self.input_path=self.row.rgbn_path
+            self.rgbn_path=self.input_path
 
 
     #
@@ -170,10 +171,12 @@ class HeightIndexDataset(Dataset):
                 category_bounds=NAIP_GREEN_CATEGORY_BOUNDS.copy()
             elif category_bounds==HeightIndexDataset.NAIP_BU:
                 category_bounds=NAIP_BU_CATEGORY_BOUNDS.copy()
-            elif category_bounds==HeightIndexDataset.NAIP_ALL:
+            elif category_bounds==HeightIndexDataset.NAIP_WATER:
                 category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+            elif category_bounds==HeightIndexDataset.NAIP_ALL:
+                category_bounds=NAIP_GREEN_CATEGORY_BOUNDS.copy()
                 category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_WATER_CATEGORY_BOUNDS.copy()
             else:
                 raise ValueError(f'{category_bounds} is not valid')
         return category_bounds
