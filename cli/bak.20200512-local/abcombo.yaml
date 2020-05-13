@@ -1,12 +1,13 @@
 run:
 
-    - greenspace-shallow:
+    - shallow-classifier_after-aspp_false-os_4-ss_2:
         nb_epochs: 100
         mask_value: null
         weights: null 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
+            # - 0.0001
         patience: 6
         criterion:
             accuracy_activation: softmax
@@ -17,15 +18,20 @@ run:
               - 1.1
               - 1.1
               - 0.95
+              # - 1.0
+              # - 1.0
+              # - 1.0
+              # - 1.0
+              # - 1.0
         optimizer:
             name: radam
         loaders:         
             batch_size: 6
-            no_data_value: no_data_last
+            no_data_value: 4
             float_cropping: 64
 
 models:
-    greenspace-shallow:    
+    shallow-classifier_after-aspp_false-os_4-ss_2:    
         in_ch: 5
         out_ch: 5
         aspp: False
@@ -42,6 +48,6 @@ models:
 
 run_notes:
 
-    - greenspace-shallow:
+    - shallow-classifier_after-aspp_false-os_4-ss_2:
       - pass
 

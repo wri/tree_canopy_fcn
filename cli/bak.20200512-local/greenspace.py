@@ -6,30 +6,33 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch_kit.loss import MaskedLoss
 import torch_kit.functional as F
 from torch_kit.optimizers.radam import RAdam
 import pytorch_models.deeplab.model as dm
 import pytorch_models.unet.model as um
-from utils.dataloader import HeightIndexDataset, CATEGORY_BOUNDS
-from config import BUILTUP_CATEGORY_THRESHOLDS
+from utils.dataloader import UrbanTreeDataset
+from config import GREENSPACE_THRESHOLDS
 
 
 #
 # RUN CONFIG
 #
+CROPPING=False
+FLOAT_CROPPING=18
+REGION='all'
+RESOLUTION=1
+TRAIN='train'
+VALID='valid'
 BATCH_SIZE=8
+NB_EPOCHS=50
+DEV=False
 DEFAULT_OPTIMIZER='adam'
 LRS=[1e-3,1e-4]
-NB_CATEGORIES=len(CATEGORY_BOUNDS)+1
-# # STATS: ALL
-# MEANS=[100.83741572079242, 100.4938850966076, 86.63500986931308, 118.72746674454453]
-# STDEVS=[42.098045003124774, 39.07388735786421, 39.629813116928815, 34.72351480486876]
-# STATS: 2015,16 Train/valid
-MEANS=[94.79936157686979, 92.8912348691044, 80.50194782393349, 108.14889758142212]
-STDEVS=[36.37876660224377, 33.22686387734999, 33.30808192430284, 30.075380846943716]
-DSETS_PATH='../datasets/los_angeles-plieades-lidar_USGS_LPC_CA_LosAngeles_2016_LAS_2018.STATS.csv'
-YEAR_MAX=2016
+NB_CATEGORIES=2
+MEANS=[101.12673535231546, 100.36417761244, 94.04471640665643, 113.85310697286442]
+STDEVS=[39.0196407883084, 35.3287659336378, 33.68392945659178, 35.37087488392215]
+
+
 #
 # TORCH_KIT CLI
 #
@@ -57,11 +60,7 @@ def criterion(**cfig):
         if torch.cuda.is_available():
             weights=weights.cuda()
     if ignore_index is not None:
-        # criterion=nn.CrossEntropyLoss(weight=weights,ignore_index=ignore_index)
-        criterion=MaskedLoss(
-            weight=weights,
-            loss_type='ce',
-            mask_value=ignore_index )
+        criterion=nn.CrossEntropyLoss(weight=weights,ignore_index=ignore_index)
     else:
         criterion=nn.CrossEntropyLoss(weight=weights)
     return criterion
@@ -83,12 +82,9 @@ def loaders(**cfig):
     """
     """
     # INITAL DATASET HANDLING
-    dsets_df=pd.read_csv(DSETS_PATH)
-    train_df=dsets_df[dsets_df.dset_type=='train']
-    valid_df=dsets_df[dsets_df.dset_type=='valid']
-    train_df=train_df[train_df.year<=YEAR_MAX]
-    valid_df=valid_df[valid_df.year<=YEAR_MAX]
-    example_path=train_df.rgbn_path.iloc[0]
+    train_df=pd.read_csv(f'{PROJECT_DIR}/datasets/train_5percSMLA.csv')
+    valid_df=pd.read_csv(f'{PROJECT_DIR}/datasets/valid_5percSMLA.csv')
+    df=pd.concat([train_df,valid_df])
     #
     # on with the show
     #
@@ -98,17 +94,11 @@ def loaders(**cfig):
     band_indices=['ndvi']
     augment=cfig.get('augment',True)
     shuffle=cfig.get('shuffle',True)
-    no_data_value=cfig.get('no_data_value',False)
-    cropping=cfig.get('cropping',None)
-    float_cropping=cfig.get('float_cropping',None)
     update_version=cfig.get('update_version',False)
 
     print('AUGMENT:',augment)
     print('SHUFFLE:',shuffle)
     print('BATCH_SIZE:',batch_size)
-    print('NO DATA VALUE:',no_data_value)
-    print('CROPPING:',cropping)
-    print('FLOAT CROPPING:',float_cropping)
 
     if (train_df.shape[0]>batch_size*8) and (valid_df.shape[0]>batch_size*2):
         if dev:
@@ -116,32 +106,26 @@ def loaders(**cfig):
             valid_df=valid_df.sample(batch_size*2)
 
 
-        dl_train=HeightIndexDataset.loader(
+        dl_train=UrbanTreeDataset.loader(
             batch_size=batch_size,
-            band_indices=['ndvi','ndwi'],
+            height_thresholds=GREENSPACE_THRESHOLDS,
+            band_indices=band_indices,
             dataframe=train_df,
             means=MEANS,
             stdevs=STDEVS,
-            no_data_value=no_data_value,
-            cropping=cropping,
-            float_cropping=float_cropping,
-            example_path=example_path,
             augment=augment,
             train_mode=True,
             target_dtype=np.int,
             shuffle_data=shuffle)
 
 
-        dl_valid=HeightIndexDataset.loader(
+        dl_valid=UrbanTreeDataset.loader(
             batch_size=batch_size,
-            band_indices=['ndvi','ndwi'],
+            height_thresholds=GREENSPACE_THRESHOLDS,
+            band_indices=band_indices,
             dataframe=valid_df,
             means=MEANS,
             stdevs=STDEVS,
-            no_data_value=no_data_value,
-            cropping=cropping,
-            float_cropping=float_cropping,
-            example_path=example_path,
             augment=augment,
             train_mode=True,
             target_dtype=np.int,
@@ -149,6 +133,25 @@ def loaders(**cfig):
 
 
         print("SIZE:",train_df.shape[0],valid_df.shape[0])
+
+        """
+        dl_train=UrbanTreeDataset.loader(
+            batch_size=batch_size,
+            band_indices=band_indices,
+            dataframe=df,
+            means=MEANS,
+            stdevs=STDEVS,
+            augment=augment,
+            value_map=vmap, 
+            train_mode=True,
+            target_expand_axis=None,
+            UPDATE_VERSION=update_version,
+            shuffle_data=shuffle)
+
+        dl_valid=None
+
+        print("SIZE:",df.shape[0])
+        """
 
         return dl_train, dl_valid
     else:

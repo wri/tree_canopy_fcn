@@ -1,37 +1,33 @@
 run:
 
-    - shallow-classifier_after-aspp_false-os_4-ss_2:
-        mask_value: 9
+    - bu-shallow:
+        nb_epochs: 100
+        mask_value: null
         weights: null 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
-            - 0.0001
         patience: 6
         criterion:
             accuracy_activation: softmax
-            ignore_index: 9
-            weights: null
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
-              # - 1.0
+            ignore_index: null
+            weights:
+              - 1.0
+              - 1.1
+              - 1.1
+              - 1.1
+              - 0.95
         optimizer:
             name: radam
         loaders:         
-            batch_size: 18
-            no_data_value: 9
-            float_cropping: 128
+            batch_size: 6
+            no_data_value: no_data_last
+            float_cropping: 64
 
 models:
-    shallow-classifier_after-aspp_false-os_4-ss_2:    
-        in_ch: 6
-        out_ch: 9
+    bu-shallow:    
+        in_ch: 5
+        out_ch: 5
         aspp: False
         backbone: xception
         classifier_position: after
@@ -46,6 +42,6 @@ models:
 
 run_notes:
 
-    - shallow-classifier_after-aspp_false-os_4-ss_2:
+    - bu-shallow:
       - pass
 

@@ -1,8 +1,8 @@
 run:
 
-    - greenspace-shallow:
+    - green_bu-shallow:
         nb_epochs: 100
-        mask_value: null
+        mask_value: 9
         weights: null 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
@@ -10,24 +10,29 @@ run:
         patience: 6
         criterion:
             accuracy_activation: softmax
-            ignore_index: null
+            ignore_index: 9
             weights:
               - 1.0
-              - 1.1
-              - 1.1
-              - 1.1
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0   
               - 0.95
         optimizer:
             name: radam
         loaders:         
             batch_size: 6
-            no_data_value: no_data_last
+            no_data_value: 9
             float_cropping: 64
 
 models:
-    greenspace-shallow:    
-        in_ch: 5
-        out_ch: 5
+    green_bu-shallow:    
+        in_ch: 6
+        out_ch: 10
         aspp: False
         backbone: xception
         classifier_position: after
@@ -42,6 +47,6 @@ models:
 
 run_notes:
 
-    - greenspace-shallow:
+    - green_bu-shallow:
       - pass
 
