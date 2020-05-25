@@ -27,6 +27,7 @@ class HeightIndexDataset(Dataset):
     NAIP_ALL='naip_all'
     NO_DATA_LAST='no_data_last'
 
+
     """dataset from height and spectral indices"""
     @classmethod
     def loader(cls,
@@ -73,6 +74,7 @@ class HeightIndexDataset(Dataset):
             height=None,
             example_path=None,
             no_data_value=NO_DATA_LAST,
+            target_methods=None,
             train_mode=False,
             hag_property=True,
             shuffle_data=False):
@@ -97,6 +99,7 @@ class HeightIndexDataset(Dataset):
         self._set_hag_properties(hag_min,hag_min_value,hag_property)
         self.target_dtype=target_dtype
         self.category_bounds=self._category_bounds(category_bounds)
+        self.target_methods=target_methods
         if no_data_value==HeightIndexDataset.NO_DATA_LAST:
             self.no_data_value=len(self.category_bounds)
         elif no_data_value:
@@ -174,9 +177,9 @@ class HeightIndexDataset(Dataset):
             elif category_bounds==HeightIndexDataset.NAIP_WATER:
                 category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
             elif category_bounds==HeightIndexDataset.NAIP_ALL:
-                category_bounds=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
                 category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_WATER_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
             else:
                 raise ValueError(f'{category_bounds} is not valid')
         return category_bounds
@@ -225,6 +228,9 @@ class HeightIndexDataset(Dataset):
         hag=np.nan_to_num(hag)
         for i,bnds in enumerate(self.category_bounds):
             cat[self._is_category(rgbn,hag,bnds)]=bnds.get('value',i)
+        if self.target_methods:
+            for tm in self.target_methods:
+                cat[tm['method'](rgbn,hag)]=tm['value']
         return cat.astype(self.target_dtype)
     
     
