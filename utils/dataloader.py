@@ -75,6 +75,7 @@ class HeightIndexDataset(Dataset):
             example_path=None,
             no_data_value=NO_DATA_LAST,
             target_methods=None,
+            uncertain_value=None,
             train_mode=False,
             hag_property=True,
             shuffle_data=False):
@@ -100,6 +101,7 @@ class HeightIndexDataset(Dataset):
         self.target_dtype=target_dtype
         self.category_bounds=self._category_bounds(category_bounds)
         self.target_methods=target_methods
+        self.uncertain_value=uncertain_value
         if no_data_value==HeightIndexDataset.NO_DATA_LAST:
             self.no_data_value=len(self.category_bounds)
         elif no_data_value:
@@ -225,9 +227,17 @@ class HeightIndexDataset(Dataset):
             
     def _build_target(self,rgbn,hag):
         cat=np.full_like(hag,self.no_data_value)
+        if self.uncertain_value is not None:
+            uncertian=np.full_like(hag,0)
         hag=np.nan_to_num(hag)
+
         for i,bnds in enumerate(self.category_bounds):
-            cat[self._is_category(rgbn,hag,bnds)]=bnds.get('value',i)
+            test=self._is_category(rgbn,hag,bnds)
+            cat[test]=bnds.get('value',i)
+            if self.uncertain_value is not None:
+                uncertian+=test
+        if self.uncertain_value is not None:
+            cat[uncertian>1]=self.uncertain_value
         if self.target_methods:
             for tm in self.target_methods:
                 cat[tm['method'](rgbn,hag)]=tm['value']
