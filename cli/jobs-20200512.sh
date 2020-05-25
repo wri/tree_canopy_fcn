@@ -1,54 +1,68 @@
 # jobs-20200512.sh
 
 
-# 1. green-naip
+
+
+
 echo
 echo 
-echo greenspace_naip
-date
 echo
+echo 
 echo
-torch_kit train greenspace_naip --poweroff f --dry_run f --dev f
-
-
-# 2. all-naip
+echo 
 echo
+echo 
 echo
-echo green_bu_naip
+echo 
+echo
+echo green_bu_plieades
 date 
 echo
 echo
-torch_kit train green_bu_naip --poweroff f --dry_run f --dev f
+torch_kit train green_bu_plieades --poweroff f --dry_run f --dev f
 
 
-# 1. green
+
 echo
+echo 
 echo
-echo greenspace
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo greenspace_plieades
 date
 echo
 echo
-torch_kit train greenspace --poweroff f --dry_run f --dev f
+torch_kit train greenspace_plieades --poweroff f --dry_run f --dev f
 
 
-# 2. all
+
+
 echo
+echo 
 echo
-echo green_bu
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo bu_plieades
 date
 echo
 echo
-torch_kit train green_bu --poweroff f --dry_run f --dev f
+torch_kit train bu_plieades --poweroff t --dry_run f --dev f
 
 
-# 3. bu
-echo
-echo
-echo bu
-date
-echo
-echo
-torch_kit train bu --dry_run f --dev f
+
+
 
 
 # ---- DONE
@@ -60,4 +74,13 @@ date
 echo
 echo
 echo
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo 
+echo
+echo 
 echo

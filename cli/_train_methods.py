@@ -21,6 +21,7 @@ MEANS=None
 STDEVS=None
 DSETS_PATH=None
 YEAR_MAX=None
+INPUT_BANDS=None
 IBNDS=None
 CAT_BOUNDS=None
 INDICES=None
@@ -86,6 +87,13 @@ def optimizer(**cfig):
 def loaders(**cfig):
     """
     """
+    _require([
+        MEANS,
+        STDEVS,
+        DSETS_PATH,
+        TARGET_RGBN,
+        TARGET_RGBN_AS_INPUT
+    ])
     # INITAL DATASET HANDLING
     dsets_df=pd.read_csv(DSETS_PATH)
     train_df=dsets_df[dsets_df.dset_type=='train']
@@ -128,9 +136,13 @@ def loaders(**cfig):
             train_df=train_df.sample(batch_size*8)
             valid_df=valid_df.sample(batch_size*2)
 
+        input_bands=INPUT_BANDS or [0,1,2,3]
+
         dl_train=HeightIndexDataset.loader(
             batch_size=batch_size,
             dataframe=train_df,
+            input_bands=input_bands,
+            input_band_count=len(input_bands),
             band_indices=INDICES,
             category_bounds=CAT_BOUNDS,
             input_bounds=IBNDS,
@@ -150,6 +162,8 @@ def loaders(**cfig):
         dl_valid=HeightIndexDataset.loader(
             batch_size=batch_size,
             dataframe=valid_df,
+            input_bands=input_bands,
+            input_band_count=len(input_bands),
             band_indices=INDICES,
             category_bounds=CAT_BOUNDS,
             input_bounds=IBNDS,
@@ -182,5 +196,15 @@ def _header(title,cfig=None):
     print('-'*100)    
     if cfig:
         pprint(cfig)
+
+
+def _require(required):
+    for r in required:
+        if r is None:
+            raise ValueError('required constants are not set')
+
+
+
+
 
 

@@ -3,7 +3,7 @@ run:
     - green_bu-shallow:
         nb_epochs: 100
         mask_value: 9
-        weights: null 
+        weights: green_bu_naip.green_bu-shallow.best.2020-05-13T11:02:30.p 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
@@ -47,6 +47,13 @@ models:
 
 run_notes:
 
-    - green_bu-shallow:
-      - pass
-
+    - green_bu_naip-shallow:
+        green_bu_naip.green_bu-shallow.2020-05-13T11:02:30.p:
+            note: >-
+              accidently ran with all data instead of 2015/2016. 
+              nb_bathes=(349,99).
+              stopped after 7 epochs
+            best_epoch: 52
+            best_loss: 0.826
+            best_acc: 0.703
+            weights: green_bu_naip.green_bu-shallow.best.2020-05-13T11:02:30.p

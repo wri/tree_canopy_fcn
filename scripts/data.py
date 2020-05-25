@@ -5,6 +5,7 @@ ROOT_PATH='/home/ericp/tree_canopy_fcn/repo'
 import sys
 sys.path.append(ROOT_PATH)
 import os.path
+import re
 from pprint import pprint
 import pandas as pd
 import mproc
@@ -110,15 +111,17 @@ def dlabs_download_tile_for_year(
         dry_run=False,
         overwrite=OVERWRITE):
     out=None
+    exists=False
     error=False
     error_msg=None
     products,dest=_dl_meta(product,tile_key,year,dset_type,region,version)
     if (not overwrite) and os.path.isfile(dest):
-        out='FILE_EXISTS: SKIPPING DOWNLOAD'
+        year=_extract_year(dest)
+        exists=True
     else:
         h.ensure_dir(dest)
         try:
-            out=dlabs.mosaic(        
+            dest=dlabs.mosaic(        
                 tile_key,
                 products=products,
                 bands=INPUT_BANDS,
@@ -135,6 +138,7 @@ def dlabs_download_tile_for_year(
             'tile_key': tile_key,
             'year': year,
             'path': dest,
+            'exists': exists,
             'error': error,
             'error_msg': error_msg}
 
@@ -304,7 +308,7 @@ def lidar(region_config,lim=None,dry_run=False):
     help='overwrite',
     default=OVERWRITE,
     type=bool)
-def descarteslabs_product_id(
+def descarteslabs(
         region_config,
         product=DEFALUT_PRODUCT,
         start=YEAR_START,
@@ -344,6 +348,18 @@ def descarteslabs_product_id(
     df.to_csv(log_path,index=False)
 
 
+#
+# INTERNAL
+#
+DATE_REGEX=r'_20(1|2)[0-9]-(train|valid|test)'
+def _extract_year(path):
+    m=re.search(DATE_REGEX,path)
+    if m:
+        s,_=m.span()
+        date=path[s+1:s+5]
+    else:
+        date='n/a'
+    return date
 
 
 cli.add_command(tilesets)

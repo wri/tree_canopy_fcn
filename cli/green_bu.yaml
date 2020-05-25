@@ -1,13 +1,13 @@
 run:
 
     - green_bu-shallow:
-        nb_epochs: 100
+        nb_epochs: 50
         mask_value: 9
         weights: null 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
-        patience: 6
+        patience: 4
         criterion:
             accuracy_activation: softmax
             ignore_index: 9

@@ -20,8 +20,12 @@ import image_kit.handler as hand
 #
 # RUN CONFIG
 # 
-# WEIGHTS='greenspace_plieades.greenspace-plieades-shallow.best.2020-05-14T13:25:38.p'
-WEIGHTS='greenspace_naip.greenspace-naip-shallow.best.2020-05-13T05:42:54.p'
+PRED_VERSION='gbu-pleiades-v1'
+WEIGHTS='green_bu_plieades.green_bu_plieades-shallow.best.2020-05-15T05:38:03.p'
+CAT_BOUNDS=HeightIndexDataset.NAIP_ALL
+INPUT_PREFIX='ab_pleiades'
+OUTPUT_PREFIX='gbu'
+INDICES=['ndvi','ndwi']
 """ plieades BH stats """
 MEANS=[112.27539083920642, 106.95122589603547, 89.21136361353429, 112.65504157044697]
 STDEVS=[40.368414410492015, 35.257702825645666, 37.21043313940668, 36.97152317592175]
@@ -30,18 +34,11 @@ MEANS=[94.79936157686979, 92.8912348691044, 80.50194782393349, 108.1488975814221
 STDEVS=[36.37876660224377, 33.22686387734999, 33.30808192430284, 30.075380846943716]
 """
 IBNDS=None
-CAT_BOUNDS=HeightIndexDataset.NAIP_GREEN
-INDICES=['ndvi']
-TARGET_RGBN=True
 INPUT_BANDS=None
-
 PATH_SELECTOR='/DATA/imagery/belohorizonte/v1/pleiades/*.tif'
-PRED_VERSION='naip-v1'
 BATCH_SIZE=6
 MAX_PROCESSES=6
 LIMIT=None
-INPUT_PREFIX='ab_pleiades'
-OUTPUT_PREFIX='greenspace'
 CROPPING=16
 #
 # CONSTANTS
@@ -123,8 +120,6 @@ def run_prediction(path):
     p=io.update_profile(p,crop=CROPPING)
     io.write(pred,path,p)
     return path
-
-
 
 
 

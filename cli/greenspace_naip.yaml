@@ -1,13 +1,13 @@
 run:
 
     - greenspace-naip-shallow:
-        nb_epochs: 100
+        nb_epochs: 50
         mask_value: null
         weights: null 
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
-        patience: 6
+        patience: 4
         criterion:
             accuracy_activation: softmax
             ignore_index: null
@@ -43,5 +43,9 @@ models:
 run_notes:
 
     - greenspace-naip-shallow:
-      - pass
+        greenspace_naip.greenspace-naip-shallow.2020-05-13T05:42:54:
+            best_epoch: 52
+            best_loss: 0.5095073076394888
+            best_acc: 0.79332208327758
+            weights: greenspace_naip.greenspace-naip-shallow.best.2020-05-13T05:42:54.p
 

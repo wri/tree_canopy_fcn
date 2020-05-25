@@ -1,22 +1,22 @@
 run:
 
-    - greenspace-shallow:
-        nb_epochs: 50
+    - greenspace-plieades-no_nir-shallow:
+        nb_epochs: 100
         mask_value: null
         weights: null
         weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
         lrs:
             - 0.001
-        patience: 4
+        patience: 6
         criterion:
             accuracy_activation: softmax
             ignore_index: null
             weights:
-              - 1.0
-              - 1.1
-              - 1.1
-              - 1.1
-              - 0.95
+                - 3.5
+                - 9
+                - 16
+                - 10.25
+                - 0.75
         optimizer:
             name: radam
         loaders:         
@@ -25,7 +25,7 @@ run:
             float_cropping: 64
 
 models:
-    greenspace-shallow:    
+    greenspace-plieades-no_nir-shallow:    
         in_ch: 5
         out_ch: 5
         aspp: False

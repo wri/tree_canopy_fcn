@@ -12,9 +12,13 @@ m.STDEVS=[36.37876660224377, 33.22686387734999, 33.30808192430284, 30.0753808469
 m.DSETS_PATH=f'{PROJECT_DIR}/datasets/los_angeles-plieades_naip-lidar_USGS_LPC_CA_LosAngeles_2016_LAS_2018.STATS.csv'
 m.YEAR_MAX=2016
 m.IBNDS=None
+# m.IBNDS={ 
+#     '-2': { 'min': -0.05 },
+#     '-1': { 'min': -0.035 } 
+# }
 m.CAT_BOUNDS=HeightIndexDataset.NAIP_ALL
 m.INDICES=['ndvi','ndwi']
-m.TARGET_RGBN=True
+m.TARGET_RGBN=False
 m.TARGET_RGBN_AS_INPUT=False
 
 
