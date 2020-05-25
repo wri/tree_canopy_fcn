@@ -150,33 +150,65 @@ NAIP_GREEN_CATEGORY_BOUNDS=[
     }
 ]
 
+# NAIP_BU_CATEGORY_BOUNDS=[   
+#     {
+#         'category': 'road',
+#         # 'value': 6,
+#         'hex': '#ffffff',
+#         'ndwi': [0.05, 0.15],
+#         'height': {'max': 1.6}
+#     },
+#     {
+#         'category': '1-story',
+#         # 'value': 7,
+#         'hex': '#6600ff',
+#         'ndwi': [-0.075, 0.15],
+#         'height': [1.6,5]
+#     },
+#     {
+#         'category': '2to3-story',
+#         # 'value': 8,
+#         'hex': '#fad1c1',
+#         'ndwi': [-0.25, 0.3],
+#         'height': [5,10]
+#     },
+#     {
+#         'category': '4+-story',
+#         # 'value': 9,
+#         'hex': '#ff00ff',
+#         'ndwi': [-0.25, 0.3],
+#         'height': 10
+#     }
+# ]
+
+
 NAIP_BU_CATEGORY_BOUNDS=[   
     {
         'category': 'road',
         # 'value': 6,
         'hex': '#ffffff',
-        'ndwi': [0.05, 0.15],
+        'ndwi': [-0.01, 0.15],
         'height': {'max': 1.6}
     },
     {
         'category': '1-story',
         # 'value': 7,
         'hex': '#6600ff',
-        'ndwi': [-0.075, 0.15],
+        'ndwi': [-0.2, 0.15],
         'height': [1.6,5]
     },
     {
         'category': '2to3-story',
         # 'value': 8,
-        'hex': '#ff0000',
-        'ndwi': [-0.25, 0.3],
+        'hex': '#c1cefa',
+        'ndwi': [-0.3, 0.25],
         'height': [5,10]
     },
     {
         'category': '4+-story',
         # 'value': 9,
         'hex': '#ff00ff',
-        'ndwi': [-0.25, 0.3],
+        'ndwi': [-0.3, 0.25],
         'height': 10
     }
 ]
