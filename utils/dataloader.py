@@ -115,6 +115,33 @@ class HeightIndexDataset(Dataset):
             self.dataframe=self.dataframe.sample(frac=1)
 
 
+    def input_data(self):
+        return self.handler.input(self.input_path,return_profile=True)
+
+
+    def rgbn_data(self,inpt=None,inpt_profile=None):
+        if self.target_rgbn:
+            rgbn, rgbn_p=self.handler.input(self.rgbn_path,return_profile=True)
+        else:
+            if inpt is None:
+                rgbn, rgbn_p=self.input_data()
+            else:
+                rgbn, rgbn_p=inpt, inpt_profile
+        return rgbn, rgbn_p
+
+
+    def hag_data(self):
+        return self._load_hag(self.hag_path,return_profile=True)
+
+
+    def target_data(self,rgbn=None,hag=None,inpt=None,inpt_profile=None):
+        if rgbn is None:
+            rgbn=self.rgbn_data(inpt,inpt_profile)
+        if hag is None:
+            hag=self.hag_data()
+        return self._build_target(rgbn,hag)        
+
+
     def __len__(self):
         return len(self.dataframe)         
     
@@ -123,13 +150,10 @@ class HeightIndexDataset(Dataset):
         self.select_data(index)
         self.handler.set_window()
         self.handler.set_augmentation()
-        inpt,inpt_p=self.handler.input(self.input_path,return_profile=True)
-        if self.target_rgbn:
-            rgbn, rgbn_p=self.handler.input(self.rgbn_path,return_profile=True)
-        else:
-            rgbn, rgbn_p=inpt, inpt_p
-        hag,hag_p=self._load_hag(self.hag_path,return_profile=True)
-        targ=self._build_target(rgbn,hag)        
+        inpt,inpt_p=self.input_data()
+        rgbn, rgbn_p=self.rgbn_data(inpt, inpt_p)
+        hag,hag_p=self.hag_data()
+        targ=self.target_data(rgbn,hag)
         if self.train_mode:
             return {
                 'input': inpt, 
@@ -309,6 +333,7 @@ class HeightIndexDataset(Dataset):
             
     def _clean(self,obj):
         return { k: self._safe_value(k,v) for k,v in obj.items() if self._safe_value(k,v) is not None }
+
 
 
 
