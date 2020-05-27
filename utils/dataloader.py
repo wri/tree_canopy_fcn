@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from image_kit.handler import InputTargetHandler
 import image_kit.indices as indices
 from config import CATEGORY_BOUNDS, NAIP_WATER_CATEGORY_BOUNDS
+from config import NAIP_OPENSPACE_BOUNDS, NAIP_GROUND_CATEGORY_BOUNDS
 from config import NAIP_GREEN_CATEGORY_BOUNDS, NAIP_BU_CATEGORY_BOUNDS
 
 
@@ -25,6 +26,7 @@ class HeightIndexDataset(Dataset):
     NAIP_BU='naip_bu'
     NAIP_WATER='naip_water'
     NAIP_ALL='naip_all'
+    NAIP_ALL_PLUS='naip_all_plus'
     NO_DATA_LAST='no_data_last'
 
 
@@ -173,7 +175,8 @@ class HeightIndexDataset(Dataset):
     def _category_bounds(self,category_bounds):
         if isinstance(category_bounds,str):
             if category_bounds==HeightIndexDataset.NAIP_GREEN:
-                category_bounds=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+                category_bounds=NAIP_OPENSPACE_BOUNDS.copy()
+                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
             elif category_bounds==HeightIndexDataset.NAIP_BU:
                 category_bounds=NAIP_BU_CATEGORY_BOUNDS.copy()
             elif category_bounds==HeightIndexDataset.NAIP_WATER:
@@ -181,6 +184,12 @@ class HeightIndexDataset(Dataset):
             elif category_bounds==HeightIndexDataset.NAIP_ALL:
                 category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
                 category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_OPENSPACE_BOUNDS.copy()
+                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
+            elif category_bounds==HeightIndexDataset.NAIP_ALL_PLUS:
+                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
+                category_bounds+=NAIP_GROUND_CATEGORY_BOUNDS.copy()
                 category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
             else:
                 raise ValueError(f'{category_bounds} is not valid')

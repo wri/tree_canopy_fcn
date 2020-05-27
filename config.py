@@ -102,7 +102,18 @@ NAIP_WATER_CATEGORY_BOUNDS=[
     }]
 
 
-NAIP_BARE_CATEGORY_BOUNDS=[   
+NAIP_OPENSPACE_BOUNDS=[   
+    {
+        'category': 'openspace',
+        # 'value': 2,
+        'hex':'#F9FC06',
+        'ndvi': 0.025,
+        'height': {'max': 0.5}
+    }
+]
+
+
+NAIP_GROUND_CATEGORY_BOUNDS=[   
     {
         'category': 'bare_ground',
         # 'value': 2,
@@ -116,35 +127,28 @@ NAIP_BARE_CATEGORY_BOUNDS=[
         'hex':'#F9FC06',
         'ndvi': 0.2,
         'height': {'max': 0.5}
-    },
+    }
 ]
 
 NAIP_GREEN_CATEGORY_BOUNDS=[   
     {
-        'category': 'openspace',
-        # 'value': 2,
-        'hex':'#F9FC06',
-        'ndvi': 0.025,
-        'height': {'max': 0.5}
-    },
-    {
         'category': 'shrub',
         # 'value': 3,
-        'hex':'#FFA500',
+        'hex':'#fd7d37',
         'ndvi': 0.2,
         'height': [0.5,2]
     },
     {
         'category': 'tree',
         # 'value': 4,
-        'hex':'#00ff00',
+        'hex': '#91d372', ##00ff00',
         'ndvi': 0.25,
         'height': [2,4]
     },
     {
         'category': 'big-tree',
         # 'value': 5,
-        'hex': '#006400',
+        'hex': '#496648',
         'ndvi': 0.25,
         'height': 4
     }
@@ -193,7 +197,7 @@ NAIP_BU_CATEGORY_BOUNDS=[
     {
         'category': '1-story',
         # 'value': 7,
-        'hex': '#6600ff',
+        'hex': '#FFC0CB',
         'ndwi': [-0.2, 0.15],
         'height': [1.6,5]
     },
@@ -201,14 +205,14 @@ NAIP_BU_CATEGORY_BOUNDS=[
         'category': '2to3-story',
         # 'value': 8,
         'hex': '#c1cefa',
-        'ndwi': [-0.3, 0.25],
+        'ndwi': [-0.2, 0.25],
         'height': [5,10]
     },
     {
         'category': '4+-story',
         # 'value': 9,
         'hex': '#ff00ff',
-        'ndwi': [-0.3, 0.25],
+        'ndwi': [-0.2, 0.25],
         'height': 10
     }
 ]
