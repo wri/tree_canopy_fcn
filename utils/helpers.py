@@ -5,7 +5,7 @@ import json
 import geojson
 import yaml
 import numpy as np
-from config import DL_PREFIX, VALUE_CATEGORIES, NB_CATS, BATCH_SIZE
+from config import DL_PREFIX
 
 
 #
@@ -81,7 +81,7 @@ def read_geojson(path,*key_path):
     return obj
 
 
-def batch_list(lst,batch_size=BATCH_SIZE):
+def batch_list(lst,batch_size=6):
     return [lst[i:i+batch_size] for i in range(0, len(lst), batch_size)]
 
 
@@ -99,11 +99,11 @@ def get_image_id(tile_key,date,prefix=DL_PREFIX):
 
 #
 # NUMPY
-#
-def get_histogram(class_band):
-    cats,counts=cats_and_counts(class_band)
-    hist={ cat: cnt for cat,cnt in zip(cats,counts) }
-    return { VALUE_CATEGORIES[cat]: hist.get(cat,0) for cat in range(NB_CATS) }
+# #
+# def get_histogram(class_band):
+#     cats,counts=cats_and_counts(class_band)
+#     hist={ cat: cnt for cat,cnt in zip(cats,counts) }
+#     return [cat]: hist.get(cat,0) for cat in rang) }
 
 
 def cats_and_counts(class_band):

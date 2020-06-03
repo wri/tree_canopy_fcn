@@ -5,9 +5,8 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 from image_kit.handler import InputTargetHandler
 import image_kit.indices as indices
-from config import CATEGORY_BOUNDS, NAIP_WATER_CATEGORY_BOUNDS
-from config import NAIP_OPENSPACE_BOUNDS, NAIP_GROUND_CATEGORY_BOUNDS
-from config import NAIP_GREEN_CATEGORY_BOUNDS, NAIP_BU_CATEGORY_BOUNDS
+import image_kit.processor as proc
+from config import CATEGORY_BOUNDS
 
 
 #
@@ -20,14 +19,24 @@ HAG_MIN=-3
 HAG_MIN_VALUE=0
 
 
+#
+# HELPERS
+#
+def get_category_bounds(product_name,*keys):
+    if keys:
+        keys=[f'{product_name}_{k}' for k in keys]
+    else:
+        keys=[product_name]
+    catbnds=[]
+    for k in keys:
+        catbnds+=CATEGORY_BOUNDS[k]
+    return catbnds 
+ 
+
 
 class HeightIndexDataset(Dataset):
-    NAIP_GREEN='naip_green'
-    NAIP_BU='naip_bu'
-    NAIP_WATER='naip_water'
-    NAIP_ALL='naip_all'
-    NAIP_ALL_PLUS='naip_all_plus'
     NO_DATA_LAST='no_data_last'
+
 
 
     """dataset from height and spectral indices"""
@@ -62,9 +71,12 @@ class HeightIndexDataset(Dataset):
             augment=False,
             input_bands=None,
             band_indices=['ndvi','ndwi'],
+            has_target_paths=False,
             target_rgbn=True,
             input_bounds=None,
-            category_bounds='naip_green',
+            category_bounds=None,
+            category_product='naip',
+            category_keys=['grass','green'],
             input_band_count=4,
             input_dtype=INPUT_DTYPE,
             target_dtype=TARGET_DTYPE,
@@ -78,11 +90,15 @@ class HeightIndexDataset(Dataset):
             no_data_value=NO_DATA_LAST,
             target_methods=None,
             uncertain_value=None,
+            smoothing_kernel=None,
+            nb_categories=None,
             train_mode=False,
             hag_property=True,
             shuffle_data=False):
         self.train_mode=train_mode
         self.target_rgbn=target_rgbn
+        self.smoothing_kernel=smoothing_kernel
+        self.nb_categories=nb_categories
         self.handler=InputTargetHandler(
             means=means,
             stdevs=stdevs,
@@ -100,8 +116,12 @@ class HeightIndexDataset(Dataset):
             target_dtype=np.float)
         self._set_spectral_bands(band_indices,input_band_count)
         self._set_hag_properties(hag_min,hag_min_value,hag_property)
+        self.has_target_paths=has_target_paths
         self.target_dtype=target_dtype
-        self.category_bounds=self._category_bounds(category_bounds)
+        if category_bounds:
+            self.category_bounds=category_bounds
+        else:
+            self.category_bounds=get_category_bounds(category_product,*category_keys)
         self.target_methods=target_methods
         self.uncertain_value=uncertain_value
         if no_data_value==HeightIndexDataset.NO_DATA_LAST:
@@ -134,12 +154,26 @@ class HeightIndexDataset(Dataset):
         return self._load_hag(self.hag_path,return_profile=True)
 
 
-    def target_data(self,rgbn=None,hag=None,inpt=None,inpt_profile=None):
-        if rgbn is None:
-            rgbn=self.rgbn_data(inpt,inpt_profile)
-        if hag is None:
-            hag=self.hag_data()
-        return self._build_target(rgbn,hag)        
+    def target_data(self,
+            rgbn=None,
+            hag=None,
+            inpt=None,
+            rgbn_profile=None,
+            inpt_profile=None,
+            return_profile=True):
+        if self.has_target_paths:
+            return self.handler.target(self.target_path,return_profile=return_profile)
+        else:
+            if rgbn is None:
+                rgbn, rgbn_profile=self.rgbn_data(inpt,inpt_profile)
+            if hag is None:
+                hag, hag_p=self.hag_data()
+            if return_profile:
+                p=rgbn_profile.copy()
+                p['count']=1
+                return self._build_target(rgbn,hag), p    
+            else:
+                return self._build_target(rgbn,hag)
 
 
     def __len__(self):
@@ -152,8 +186,13 @@ class HeightIndexDataset(Dataset):
         self.handler.set_augmentation()
         inpt,inpt_p=self.input_data()
         rgbn, rgbn_p=self.rgbn_data(inpt, inpt_p)
-        hag,hag_p=self.hag_data()
-        targ=self.target_data(rgbn,hag)
+        if self.has_target_paths:
+            hag, hag_p=self.hag_data()
+            targ=self.target_data(rgbn,hag,return_profile=False)
+        else:
+            targ=self.target_data(return_profile=False)
+        if self.smoothing_kernel:
+            targ=proc.categorical_smoothing(targ,self.nb_categories,kernel=SMOOTHING_KERNEL)
         if self.train_mode:
             return {
                 'input': inpt, 
@@ -166,19 +205,24 @@ class HeightIndexDataset(Dataset):
             itm={
                 'input': inpt, 
                 'target': targ,
-                'hag': hag,
                 'rgbn': rgbn,
                 'index': self.index,
                 'row': row,
                 'input_path': self.input_path,
                 'rgbn_path': self.rgbn_path,
-                'hag_path': self.hag_path,
                 'k': self.handler.k,
                 'flip': self.handler.flip,
                 'input_profile': inpt_p,
                 'rgbn_profile': rgbn_p,
-                'hag_profile': hag_p 
             }
+            if self.has_target_paths:
+                itm['target_path']=self.target_path
+            else:
+                itm['hag']=hag
+                itm['hag_path']=self.hag_path
+                itm['hag_profile']=hag_p 
+
+
         return itm
 
 
@@ -186,7 +230,10 @@ class HeightIndexDataset(Dataset):
         self.index=index
         self.row=self.dataframe.iloc[index]
         self.input_path=self.row.input_path
-        self.hag_path=self.row.hag_path
+        if self.has_target_paths:
+            self.target_path=self.row.target_path
+        else:
+            self.hag_path=self.row.hag_path
         if self.target_rgbn:
             self.rgbn_path=self.row.rgbn_path
         else:
@@ -196,30 +243,6 @@ class HeightIndexDataset(Dataset):
     #
     # INTERNAL METHODS
     #
-    def _category_bounds(self,category_bounds):
-        if isinstance(category_bounds,str):
-            if category_bounds==HeightIndexDataset.NAIP_GREEN:
-                category_bounds=NAIP_OPENSPACE_BOUNDS.copy()
-                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
-            elif category_bounds==HeightIndexDataset.NAIP_BU:
-                category_bounds=NAIP_BU_CATEGORY_BOUNDS.copy()
-            elif category_bounds==HeightIndexDataset.NAIP_WATER:
-                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
-            elif category_bounds==HeightIndexDataset.NAIP_ALL:
-                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_OPENSPACE_BOUNDS.copy()
-                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
-            elif category_bounds==HeightIndexDataset.NAIP_ALL_PLUS:
-                category_bounds=NAIP_WATER_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_BU_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_GROUND_CATEGORY_BOUNDS.copy()
-                category_bounds+=NAIP_GREEN_CATEGORY_BOUNDS.copy()
-            else:
-                raise ValueError(f'{category_bounds} is not valid')
-        return category_bounds
-
-
     def _set_spectral_bands(self,band_indices,band_count):
         if band_indices:
             self.spectral_bands={ b:(band_count+i) for i,b in enumerate(band_indices) }
