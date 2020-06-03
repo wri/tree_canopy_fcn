@@ -72,6 +72,7 @@ class HeightIndexDataset(Dataset):
             input_bands=None,
             band_indices=['ndvi','ndwi'],
             has_target_paths=False,
+            value_map=None,
             target_rgbn=True,
             input_bounds=None,
             category_bounds=None,
@@ -117,6 +118,7 @@ class HeightIndexDataset(Dataset):
         self._set_spectral_bands(band_indices,input_band_count)
         self._set_hag_properties(hag_min,hag_min_value,hag_property)
         self.has_target_paths=has_target_paths
+        self.value_map=value_map
         self.target_dtype=target_dtype
         if category_bounds:
             self.category_bounds=category_bounds
@@ -162,18 +164,29 @@ class HeightIndexDataset(Dataset):
             inpt_profile=None,
             return_profile=True):
         if self.has_target_paths:
-            return self.handler.target(self.target_path,return_profile=return_profile)
+            targ, targ_p=self.handler.target(self.target_path,return_profile=True)
+            targ=targ[0]
         else:
             if rgbn is None:
                 rgbn, rgbn_profile=self.rgbn_data(inpt,inpt_profile)
             if hag is None:
                 hag, hag_p=self.hag_data()
             if return_profile:
-                p=rgbn_profile.copy()
-                p['count']=1
-                return self._build_target(rgbn,hag), p    
-            else:
-                return self._build_target(rgbn,hag)
+                targ_p=rgbn_profile.copy()
+                targ_p['count']=1
+            targ=self._build_target(rgbn,hag)
+        if self.value_map:
+            targ=proc.map_values(targ,self.value_map)
+        targ=targ.astype(np.uint8)
+        if self.smoothing_kernel is not None:
+            targ=proc.categorical_smoothing(
+                targ,
+                self.nb_categories,
+                kernel=self.smoothing_kernel)
+        if return_profile:
+            return targ, targ_p
+        else:
+            return targ
 
 
     def __len__(self):
@@ -187,12 +200,10 @@ class HeightIndexDataset(Dataset):
         inpt,inpt_p=self.input_data()
         rgbn, rgbn_p=self.rgbn_data(inpt, inpt_p)
         if self.has_target_paths:
+            targ=self.target_data(return_profile=False)
+        else:
             hag, hag_p=self.hag_data()
             targ=self.target_data(rgbn,hag,return_profile=False)
-        else:
-            targ=self.target_data(return_profile=False)
-        if self.smoothing_kernel:
-            targ=proc.categorical_smoothing(targ,self.nb_categories,kernel=SMOOTHING_KERNEL)
         if self.train_mode:
             return {
                 'input': inpt, 
@@ -201,7 +212,6 @@ class HeightIndexDataset(Dataset):
             row=self._clean(self.row.to_dict())
             inpt_p=self._clean(inpt_p)
             rgbn_p=self._clean(rgbn_p)
-            hag_p=self._clean(hag_p)
             itm={
                 'input': inpt, 
                 'target': targ,
@@ -218,6 +228,7 @@ class HeightIndexDataset(Dataset):
             if self.has_target_paths:
                 itm['target_path']=self.target_path
             else:
+                hag_p=self._clean(hag_p)
                 itm['hag']=hag
                 itm['hag_path']=self.hag_path
                 itm['hag_profile']=hag_p 
