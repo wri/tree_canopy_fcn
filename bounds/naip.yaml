@@ -1,0 +1,70 @@
+water:
+  - category: water
+    hex: '#56CEFB'
+    ndwi: 0.32   
+
+
+openspace: 
+  - category: openspace
+    hex: '#F9FC06'
+    ndvi: 0.025
+    height: 
+      max: 0.5
+
+
+ground:
+  - category: bare_ground
+    value: 2
+    hex: '#900C3F'
+    ndvi: [0.025,0.15]
+    height: 
+      max: 0.5
+
+    
+grass:
+  - category: grass
+    hex: '#F9FC06'
+    ndvi: 0.2
+    height: 
+      max: 0.5
+
+
+green:   
+  - category: shrub
+    hex: '#fd7d37'
+    ndvi: 0.2
+    height: [0.5,2]
+  
+  - category: tree
+    hex: '#91d372' ##00ff00
+    ndvi: 0.25
+    height: [2,4]
+  
+  - category: big-tree
+    hex: '#496648'
+    ndvi: 0.25
+    height: 4
+
+
+bu:
+  - category: road
+    hex: '#ffffff'
+    ndwi: [-0.01, 0.15]
+    height: 
+      max: 1.6
+
+  - category: 1-story
+    hex: '#FFC0CB'
+    ndwi: [-0.2, 0.15]
+    height: [1.6,5]
+    
+  - category: 2to3-story
+    hex: '#c1cefa'
+    ndwi: [-0.2, 0.25]
+    height: [5,10]
+    
+  - category: 4+-story
+    hex: '#ff00ff'
+    ndwi: [-0.2, 0.25]
+    height: 10
+      

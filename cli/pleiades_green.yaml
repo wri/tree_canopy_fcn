@@ -1,0 +1,48 @@
+run:
+
+    - pleiades-green_bu-rgb:
+        nb_epochs: 50
+        mask_value: 5
+        weights: null 
+        weights_dir: /home/ericp/tree_canopy_fcn/repo/cli/weights
+        lrs:
+            - 0.001
+        patience: 4
+        criterion:
+            accuracy_activation: softmax
+            ignore_index: 5
+            weights:
+              - 1.0
+              - 1.0
+              - 1.0
+              - 1.0
+              - 0.85 
+              - 0.000001
+        optimizer:
+            name: radam
+        loaders:         
+            batch_size: 6
+            no_data_value: 5
+            float_cropping: 64
+
+models:
+    pleiades-green_bu-rgb:    
+        in_ch: 3
+        out_ch: 6
+        aspp: False
+        backbone: xception
+        classifier_position: after
+        backbone_config:
+                bottleneck_depth: 8
+                output_stride: 4
+                stride_states: [2]
+                xblock_chs: [128]
+                exit_xblock_ch: 256
+                exit_stack_chs: [512]
+
+
+run_notes:
+
+    - pleiades-green_bu-rgb:
+      - pass
+

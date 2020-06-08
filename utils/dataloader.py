@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from image_kit.handler import InputTargetHandler
 import image_kit.indices as indices
 import image_kit.processor as proc
-from config import CATEGORY_BOUNDS
+import utils.load as load
 
 
 #
@@ -22,14 +22,11 @@ HAG_MIN_VALUE=0
 #
 # HELPERS
 #
-def get_category_bounds(product_name,*keys):
-    if keys:
-        keys=[f'{product_name}_{k}' for k in keys]
-    else:
-        keys=[product_name]
+def get_category_bounds(bounds,*keys):
+    bounds=load.bounds(bounds)
     catbnds=[]
     for k in keys:
-        catbnds+=CATEGORY_BOUNDS[k]
+        catbnds+=bounds[k]
     return catbnds 
  
 
@@ -177,12 +174,12 @@ class HeightIndexDataset(Dataset):
             targ=self._build_target(rgbn,hag)
         if self.value_map:
             targ=proc.map_values(targ,self.value_map)
-        targ=targ.astype(np.uint8)
         if self.smoothing_kernel is not None:
             targ=proc.categorical_smoothing(
-                targ,
+                targ.astype(np.uint8),
                 self.nb_categories,
                 kernel=self.smoothing_kernel)
+        targ=targ.astype(self.target_dtype)
         if return_profile:
             return targ, targ_p
         else:
@@ -198,10 +195,10 @@ class HeightIndexDataset(Dataset):
         self.handler.set_window()
         self.handler.set_augmentation()
         inpt,inpt_p=self.input_data()
-        rgbn, rgbn_p=self.rgbn_data(inpt, inpt_p)
         if self.has_target_paths:
             targ=self.target_data(return_profile=False)
         else:
+            rgbn, rgbn_p=self.rgbn_data(inpt, inpt_p)
             hag, hag_p=self.hag_data()
             targ=self.target_data(rgbn,hag,return_profile=False)
         if self.train_mode:
@@ -211,28 +208,27 @@ class HeightIndexDataset(Dataset):
         else:
             row=self._clean(self.row.to_dict())
             inpt_p=self._clean(inpt_p)
-            rgbn_p=self._clean(rgbn_p)
             itm={
                 'input': inpt, 
                 'target': targ,
-                'rgbn': rgbn,
                 'index': self.index,
                 'row': row,
                 'input_path': self.input_path,
-                'rgbn_path': self.rgbn_path,
                 'k': self.handler.k,
                 'flip': self.handler.flip,
                 'input_profile': inpt_p,
-                'rgbn_profile': rgbn_p,
             }
             if self.has_target_paths:
                 itm['target_path']=self.target_path
             else:
                 hag_p=self._clean(hag_p)
+                rgbn_p=self._clean(rgbn_p)
+                itm['rgbn']=rgbn
+                itm['rgbn_path']=self.rgbn_path
+                itm['rgbn_profile']=rgbn_p
                 itm['hag']=hag
                 itm['hag_path']=self.hag_path
                 itm['hag_profile']=hag_p 
-
 
         return itm
 
@@ -245,10 +241,10 @@ class HeightIndexDataset(Dataset):
             self.target_path=self.row.target_path
         else:
             self.hag_path=self.row.hag_path
-        if self.target_rgbn:
-            self.rgbn_path=self.row.rgbn_path
-        else:
-            self.rgbn_path=self.input_path
+            if self.target_rgbn:
+                self.rgbn_path=self.row.rgbn_path
+            else:
+                self.rgbn_path=self.input_path
 
 
     #

@@ -34,10 +34,10 @@ DEFALUT_VERSION=1
 YEAR_START=2015
 YEAR_END=2018
 DEFALUT_PRODUCT='plieades'
-PLEIADES_PRODUCTS=['dlabs:oneatlas:phr:v2']
+PLEIADES_PRODUCTS=['airbus:oneatlas:phr:v2']
 PLEIADES_DIR='pleiades'
 PLEIADES_PREFIX='ab_pleiades'
-SPOT_PRODUCTS=['dlabs:oneatlas:spot:v2']
+SPOT_PRODUCTS=['airbus:oneatlas:spot:v2']
 SPOT_DIR='spot'
 SPOT_PREFIX='ab_spot'
 NAIP_PREFIX='naip'
@@ -121,7 +121,7 @@ def dlabs_download_tile_for_year(
     else:
         h.ensure_dir(dest)
         try:
-            dest=dlabs.mosaic(        
+            out=dlabs.mosaic(        
                 tile_key,
                 products=products,
                 bands=INPUT_BANDS,

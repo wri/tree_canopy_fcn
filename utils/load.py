@@ -1,6 +1,8 @@
 from __future__ import print_function
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+import os.path
+import re
 import yaml
 from glob import glob
 import numpy as np
@@ -17,7 +19,7 @@ from config import PRODUCTS_DIR
 from config import TILE_MAP_PATH, ALPHA_BAND
 from config import MEANS, STDEVS
 from config import DEFAULT_MODEL_TYPE, DEFAULT_NB_INPUT_CH
-from config import MODEL_CONFIG_FILE, CLI_DIR
+from config import MODEL_CONFIG_FILE, CLI_DIR, BOUNDS_DIR
 
 
 
@@ -107,8 +109,18 @@ def bands(product):
 #
 # META/SETUP/DATA
 #
+def bounds(name,*key_path):
+    if not re.search('.yaml$',name):
+        name=f'{name}.yaml'
+    path=f'{BOUNDS_DIR}/{name}'
+    return h.read_yaml(path,*key_path)
+
+
 def aoi(region_config,*key_path):
-    return h.read_yaml(paths.aoi(region_config),*key_path)
+    path=paths.aoi(region_config)
+    if not os.path.isfile(path):
+        path=paths.aoi('predict_args')
+    return h.read_yaml(path,*key_path)
 
 
 def study_area(study_area):

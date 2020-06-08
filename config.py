@@ -13,6 +13,7 @@ PRODUCTS_DIR=f'{PROJECT_DIR}/products'
 GEOMETRY_DIR=f'{PROJECT_DIR}/geometries'
 AOI_DIR=f'{PROJECT_DIR}/aois'
 CLI_DIR=f'{PROJECT_DIR}/cli'
+BOUNDS_DIR=f'{PROJECT_DIR}/bounds'
 TILES_DIR=f'{DATA_DIR}/tiles'
 
 
@@ -89,219 +90,219 @@ DEFAULT_NB_INPUT_CH=5
 MODEL_CONFIG_FILE='treecover'
 
 
-#
-# NAIP BOUNDS
-#
-NAIP_WATER_BOUNDS=[   
-    {
-        'category': 'water',
-        # 'value': 1,
-        'hex': '#56CEFB',
-        'ndwi': 0.32,
-    }]
+# #
+# # NAIP BOUNDS
+# #
+# NAIP_WATER_BOUNDS=[   
+#     {
+#         'category': 'water',
+#         # 'value': 1,
+#         'hex': '#56CEFB',
+#         'ndwi': 0.32,
+#     }]
 
 
-NAIP_OPENSPACE_BOUNDS=[   
-    {
-        'category': 'openspace',
-        # 'value': 2,
-        'hex':'#F9FC06',
-        'ndvi': 0.025,
-        'height': {'max': 0.5}
-    }
-]
+# NAIP_OPENSPACE_BOUNDS=[   
+#     {
+#         'category': 'openspace',
+#         # 'value': 2,
+#         'hex':'#F9FC06',
+#         'ndvi': 0.025,
+#         'height': {'max': 0.5}
+#     }
+# ]
 
 
-NAIP_GROUND_BOUNDS=[   
-    {
-        'category': 'bare_ground',
-        # 'value': 2,
-        'hex':'#900C3F',
-        'ndvi': [0.025,0.15],
-        'height': {'max': 0.5}
-    }
-]
+# NAIP_GROUND_BOUNDS=[   
+#     {
+#         'category': 'bare_ground',
+#         # 'value': 2,
+#         'hex':'#900C3F',
+#         'ndvi': [0.025,0.15],
+#         'height': {'max': 0.5}
+#     }
+# ]
 
 
-NAIP_GRASS_BOUNDS=[   
-    {
-        'category': 'grass',
-        # 'value': 2,
-        'hex':'#F9FC06',
-        'ndvi': 0.2,
-        'height': {'max': 0.5}
-    }
-]
+# NAIP_GRASS_BOUNDS=[   
+#     {
+#         'category': 'grass',
+#         # 'value': 2,
+#         'hex':'#F9FC06',
+#         'ndvi': 0.2,
+#         'height': {'max': 0.5}
+#     }
+# ]
 
-NAIP_GREEN_BOUNDS=[   
-    {
-        'category': 'shrub',
-        # 'value': 3,
-        'hex':'#fd7d37',
-        'ndvi': 0.2,
-        'height': [0.5,2]
-    },
-    {
-        'category': 'tree',
-        # 'value': 4,
-        'hex': '#91d372', ##00ff00',
-        'ndvi': 0.25,
-        'height': [2,4]
-    },
-    {
-        'category': 'big-tree',
-        # 'value': 5,
-        'hex': '#496648',
-        'ndvi': 0.25,
-        'height': 4
-    }
-]
-
-
-NAIP_BU_BOUNDS=[   
-    {
-        'category': 'road',
-        # 'value': 6,
-        'hex': '#ffffff',
-        'ndwi': [-0.01, 0.15],
-        'height': {'max': 1.6}
-    },
-    {
-        'category': '1-story',
-        # 'value': 7,
-        'hex': '#FFC0CB',
-        'ndwi': [-0.2, 0.15],
-        'height': [1.6,5]
-    },
-    {
-        'category': '2to3-story',
-        # 'value': 8,
-        'hex': '#c1cefa',
-        'ndwi': [-0.2, 0.25],
-        'height': [5,10]
-    },
-    {
-        'category': '4+-story',
-        # 'value': 9,
-        'hex': '#ff00ff',
-        'ndwi': [-0.2, 0.25],
-        'height': 10
-    }
-]
+# NAIP_GREEN_BOUNDS=[   
+#     {
+#         'category': 'shrub',
+#         # 'value': 3,
+#         'hex':'#fd7d37',
+#         'ndvi': 0.2,
+#         'height': [0.5,2]
+#     },
+#     {
+#         'category': 'tree',
+#         # 'value': 4,
+#         'hex': '#91d372', ##00ff00',
+#         'ndvi': 0.25,
+#         'height': [2,4]
+#     },
+#     {
+#         'category': 'big-tree',
+#         # 'value': 5,
+#         'hex': '#496648',
+#         'ndvi': 0.25,
+#         'height': 4
+#     }
+# ]
 
 
-#
-# PLEIADES BOUNDS
-#
-PLEIADES_WATER_BOUNDS=[   
-    {
-        'category': 'water',
-        # 'value': 1,
-        'hex': '#56CEFB',
-        'ndwi': 0.4,
-    }]
+# NAIP_BU_BOUNDS=[   
+#     {
+#         'category': 'road',
+#         # 'value': 6,
+#         'hex': '#ffffff',
+#         'ndwi': [-0.01, 0.15],
+#         'height': {'max': 1.6}
+#     },
+#     {
+#         'category': '1-story',
+#         # 'value': 7,
+#         'hex': '#FFC0CB',
+#         'ndwi': [-0.2, 0.15],
+#         'height': [1.6,5]
+#     },
+#     {
+#         'category': '2to3-story',
+#         # 'value': 8,
+#         'hex': '#c1cefa',
+#         'ndwi': [-0.2, 0.25],
+#         'height': [5,10]
+#     },
+#     {
+#         'category': '4+-story',
+#         # 'value': 9,
+#         'hex': '#ff00ff',
+#         'ndwi': [-0.2, 0.25],
+#         'height': 10
+#     }
+# ]
 
 
-PLEIADES_OPENSPACE_BOUNDS=[   
-    {
-        'category': 'openspace',
-        # 'value': 2,
-        'hex':'#F9FC06',
-        'ndvi': 0.05,
-        'height': {'max': 0.5}
-    }
-]
-
-PLEIADES_GROUND_BOUNDS=[   
-    {
-        'category': 'bare_ground',
-        # 'value': 2,
-        'hex':'#900C3F',
-        'ndvi': [-0.1,-0.0025],
-        'height': {'max': 0.5}
-    }
-]
-
-PLEIADES_GRASS_BOUNDS=[  
-    {
-        'category': 'grass',
-        # 'value': 2,
-        'hex':'#F9FC06',
-        'ndvi': 0.15,
-        'height': {'max': 0.5}
-    }
-]
-
-PLEIADES_GREEN_BOUNDS=[   
-    {
-        'category': 'shrub',
-        # 'value': 3,
-        'hex':'#fd7d37',
-        'ndvi': 0.15,
-        'height': [0.5,2]
-    },
-    {
-        'category': 'tree',
-        # 'value': 4,
-        'hex': '#91d372', ##00ff00',
-        'ndvi': 0.15,
-        'height': [2,4]
-    },
-    {
-        'category': 'big-tree',
-        # 'value': 5,
-        'hex': '#496648',
-        'ndvi': 0.15,
-        'height': 4
-    }
-]
+# #
+# # PLEIADES BOUNDS
+# #
+# PLEIADES_WATER_BOUNDS=[   
+#     {
+#         'category': 'water',
+#         # 'value': 1,
+#         'hex': '#56CEFB',
+#         'ndwi': 0.4,
+#     }]
 
 
-PLEIADES_BU_BOUNDS=[   
-    {
-        'category': 'road',
-        # 'value': 6,
-        'hex': '#ffffff',
-        'ndwi': { 'min': -0.15, 'max': 0.35 },
-        'height': {'max': 1.6}
-    },
-    {
-        'category': '1-story',
-        # 'value': 7,
-        'hex': '#FFC0CB',
-        'ndwi': { 'min': -0.35 },
-        'height': [1.6,5]
-    },
-    {
-        'category': '2to3-story',
-        # 'value': 8,
-        'hex': '#c1cefa',
-        'ndwi': { 'min': -0.35 },
-        'height': [5,10]
-    },
-    {
-        'category': '4+-story',
-        # 'value': 9,
-        'hex': '#ff00ff',
-        'ndwi': { 'min': -0.35 },
-        'height': 10
-    }
-]
+# PLEIADES_OPENSPACE_BOUNDS=[   
+#     {
+#         'category': 'openspace',
+#         # 'value': 2,
+#         'hex':'#F9FC06',
+#         'ndvi': 0.05,
+#         'height': {'max': 0.5}
+#     }
+# ]
 
-CATEGORY_BOUNDS={
-    'naip_water': NAIP_WATER_BOUNDS,
-    'naip_openspace': NAIP_OPENSPACE_BOUNDS,
-    'naip_ground': NAIP_GROUND_BOUNDS,
-    'naip_grass': NAIP_GRASS_BOUNDS,
-    'naip_green': NAIP_GREEN_BOUNDS,
-    'naip_bu': NAIP_BU_BOUNDS,
-    'pleiades_water': PLEIADES_WATER_BOUNDS,
-    'pleiades_openspace': PLEIADES_OPENSPACE_BOUNDS,
-    'pleiades_ground': PLEIADES_GROUND_BOUNDS,
-    'pleiades_grass': PLEIADES_GRASS_BOUNDS,
-    'pleiades_green': PLEIADES_GREEN_BOUNDS,
-    'pleiades_bu': PLEIADES_BU_BOUNDS
-}
+# PLEIADES_GROUND_BOUNDS=[   
+#     {
+#         'category': 'bare_ground',
+#         # 'value': 2,
+#         'hex':'#900C3F',
+#         'ndvi': [-0.1,-0.0025],
+#         'height': {'max': 0.5}
+#     }
+# ]
+
+# PLEIADES_GRASS_BOUNDS=[  
+#     {
+#         'category': 'grass',
+#         # 'value': 2,
+#         'hex':'#F9FC06',
+#         'ndvi': 0.15,
+#         'height': {'max': 0.5}
+#     }
+# ]
+
+# PLEIADES_GREEN_BOUNDS=[   
+#     {
+#         'category': 'shrub',
+#         # 'value': 3,
+#         'hex':'#fd7d37',
+#         'ndvi': 0.15,
+#         'height': [0.5,2]
+#     },
+#     {
+#         'category': 'tree',
+#         # 'value': 4,
+#         'hex': '#91d372', ##00ff00',
+#         'ndvi': 0.15,
+#         'height': [2,4]
+#     },
+#     {
+#         'category': 'big-tree',
+#         # 'value': 5,
+#         'hex': '#496648',
+#         'ndvi': 0.15,
+#         'height': 4
+#     }
+# ]
+
+
+# PLEIADES_BU_BOUNDS=[   
+#     {
+#         'category': 'road',
+#         # 'value': 6,
+#         'hex': '#ffffff',
+#         'ndwi': { 'min': -0.15, 'max': 0.35 },
+#         'height': {'max': 1.6}
+#     },
+#     {
+#         'category': '1-story',
+#         # 'value': 7,
+#         'hex': '#FFC0CB',
+#         'ndwi': { 'min': -0.35 },
+#         'height': [1.6,5]
+#     },
+#     {
+#         'category': '2to3-story',
+#         # 'value': 8,
+#         'hex': '#c1cefa',
+#         'ndwi': { 'min': -0.35 },
+#         'height': [5,10]
+#     },
+#     {
+#         'category': '4+-story',
+#         # 'value': 9,
+#         'hex': '#ff00ff',
+#         'ndwi': { 'min': -0.35 },
+#         'height': 10
+#     }
+# ]
+
+# CATEGORY_BOUNDS={
+#     'naip_water': NAIP_WATER_BOUNDS,
+#     'naip_openspace': NAIP_OPENSPACE_BOUNDS,
+#     'naip_ground': NAIP_GROUND_BOUNDS,
+#     'naip_grass': NAIP_GRASS_BOUNDS,
+#     'naip_green': NAIP_GREEN_BOUNDS,
+#     'naip_bu': NAIP_BU_BOUNDS,
+#     'pleiades_water': PLEIADES_WATER_BOUNDS,
+#     'pleiades_openspace': PLEIADES_OPENSPACE_BOUNDS,
+#     'pleiades_ground': PLEIADES_GROUND_BOUNDS,
+#     'pleiades_grass': PLEIADES_GRASS_BOUNDS,
+#     'pleiades_green': PLEIADES_GREEN_BOUNDS,
+#     'pleiades_bu': PLEIADES_BU_BOUNDS
+# }
 
 
 #

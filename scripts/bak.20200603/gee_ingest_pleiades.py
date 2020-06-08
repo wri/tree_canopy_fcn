@@ -4,11 +4,11 @@ import pandas as pd
 #
 # CONFIG
 #
-CSV='costa_rica-san_jose-v2-pleiades-dlv3p-green_bu-ndvi-ndwi-uris.csv'
-USER='projects/wri-datalab'
-# USER='users/brookwilliams'
-IC=f'{USER}/CR/dev/predictions/v2/costa_rica-san_jose-pleiades-bu-ndvi-ndwi'
-NO_DATA=9
+CSV='belohorizonte-pleiades-v1-uris.csv'
+# USER='projects/wri-datalab'
+USER='users/brookwilliams'
+IC=f'{USER}/lidar-rgbn/dev/green/belohorizonte-pleiades-v1'
+NO_DATA=4
 
 
 #
