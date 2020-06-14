@@ -1,0 +1,10 @@
+geometry: la-bulit-up
+input_product: pleiades
+input_folder: pleiades
+rgbn_folder: naip
+lidar_folder: lidar
+subdir: USGS_LPC_CA_LosAngeles_2016_LAS_2018
+ept_folder: USGS_LPC_CA_LosAngeles_2016_LAS_2018
+ept_root: https://s3-us-west-2.amazonaws.com/usgs-lidar-public
+sample_frac: 0.1
+resolution: 0.5
