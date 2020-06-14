@@ -9,6 +9,7 @@ import re
 from pprint import pprint
 import pandas as pd
 import mproc
+from config import RESOLUTION
 import utils.lidar as lidar
 import utils.helpers as h
 import utils.datasets as datasets
@@ -33,7 +34,7 @@ DEFALUT_VERSION=1
 
 YEAR_START=2015
 YEAR_END=2018
-DEFALUT_PRODUCT='plieades'
+DEFALUT_PRODUCT='pleiades'
 PLEIADES_PRODUCTS=['airbus:oneatlas:phr:v2']
 PLEIADES_DIR='pleiades'
 PLEIADES_PREFIX='ab_pleiades'
@@ -64,10 +65,12 @@ def download_lidar_tiles(
         lim=None,
         max_processes=MAX_PROCESSES,
         dry_run=False):
-    keys=load.tile_keys(region,dset,frac=frac)[:lim]
+    resolution=load.aoi(region,'resolution')
+    keys=load.tile_keys(region,suffix=dset,frac=frac)[:lim]
     out=utils.lidar.download_tileset(
         src,
         region,
+        resolution,
         keys,
         identifier=dset,
         subdir=usgs_folder,
@@ -79,11 +82,12 @@ def download_lidar_tiles(
 
 
 def _dl_meta(product,tile_key,year,dset_type,region,version):
+    resolution=tile_key.split(':')[2]
     if product=='spot':
         product_prefix=SPOT_PREFIX
         product_dir=SPOT_DIR
         products=SPOT_PRODUCTS
-    elif product=='plieades':
+    elif product=='pleiades':
         product_prefix=PLEIADES_PREFIX
         product_dir=PLEIADES_DIR
         products=PLEIADES_PRODUCTS
@@ -96,7 +100,7 @@ def _dl_meta(product,tile_key,year,dset_type,region,version):
         product_prefix=name
         product_dir=name
         products=[dlid]
-    directory=f'{DATA_ROOT}/{region}/v{version}/{product_dir}'
+    directory=f'{DATA_ROOT}/{region}/v{version}/{resolution}/{product_dir}'
     path=f'{directory}/{product_prefix}_{tile_key}_{year}-{dset_type}.tif'
     return products, path
 
@@ -187,9 +191,10 @@ def cli(ctx):
     ctx.obj={}
 
 
+
 @click.command(
     help='tilesets: region_name',
-    context_settings=ARG_KWARGS_SETTINGS ) 
+    context_settings=ARG_KWARGS_SETTINGS )
 @click.argument('region_config',type=str)
 def tilesets(region_config):
     aoi=load.aoi(region_config)
@@ -197,7 +202,8 @@ def tilesets(region_config):
     geometry=aoi.get('geometry')
     version=aoi.get('version',1)
     sample_frac=aoi['sample_frac']
-    print('TILESETS: ',region,geometry,version)
+    resolution=aoi.get('resolution',RESOLUTION)
+    print('TILESETS: ',region,geometry,version,resolution)
     """ save tile keys for region """
     print('\n'*2)
     print("master_keys:")
@@ -205,6 +211,7 @@ def tilesets(region_config):
         region,
         geometry=geometry,
         version=version,
+        resolution=resolution,
         return_keys=True)
     print()
     print(master_keys_path,len(master_keys),master_keys[0])
@@ -214,7 +221,7 @@ def tilesets(region_config):
     print('\n'*2)
     print("split_paths:")
     print()
-    split_paths=datasets.split_tile_keys(region)
+    split_paths=datasets.split_tile_keys(region,resolution)
     pprint(split_paths)
 
 
@@ -222,7 +229,7 @@ def tilesets(region_config):
     print('\n'*2)
     print("samples:")
     print()
-    sample_paths=datasets.sample_tile_keys(region,frac=sample_frac)
+    sample_paths=datasets.sample_tile_keys(region,resolution,frac=sample_frac)
     for p in sample_paths:
         print(p.split('/')[-1],len(h.read_pickle(p)))
 
@@ -275,7 +282,7 @@ def lidar(region_config,lim=None,dry_run=False):
 @click.argument('region_config',type=str)
 @click.option(
     '--product',
-    help='plieades, spot, naip or comma separated string="descarteslabs_product_id,name"',
+    help='pleiades, spot, naip or comma separated string="descarteslabs_product_id,name"',
     default=DEFALUT_PRODUCT,
     type=str)
 @click.option(
@@ -324,7 +331,7 @@ def descarteslabs(
     dfs=[]
     for typ in DSET_TYPES:
         print()
-        keys=load.tile_keys(region_config,typ,frac=aoi_config['sample_frac'])[:lim]
+        keys=load.tile_keys(region_config,suffix=typ,frac=aoi_config['sample_frac'])[:lim]
         print(f'DOWLOADING {typ}({len(keys)}):')
         def _download(key):
             return dlabs_download_tile_in_range(
