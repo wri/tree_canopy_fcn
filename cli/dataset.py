@@ -1,100 +1,34 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import sys
-PROJECT_DIR='/home/ericp/tree_canopy_fcn/repo'
-sys.path.append(PROJECT_DIR)
-from importlib import reload
-
-
-# In[2]:
-
-
+sys.path.append('..')
 import os
+from pathlib import Path
 import re
 import pandas as pd
 import image_kit.io as io
 import mproc
 from glob import glob
+from pprint import pprint
+import click
+import utils.load as load
+
+_filedir=os.path.dirname(os.path.realpath(__file__))
 
 
-# ---
 
-# In[3]:
-
-
-PRODUCT_NAME='spot'
-REGION_NAME='la_built_up_1p5'
-RESOLUTION=1.5
-MAX_BLACK_PIXEL=512*4
-
-
-# ---
-
-# In[4]:
-
-
-DATA_DIR=f'/DATA/imagery/{REGION_NAME}/v1/{RESOLUTION}'
-RES_PART=re.sub(r'\.','p',str(RESOLUTION))
-DSET_PATH=f'{PROJECT_DIR}/datasets/{REGION_NAME}.{RES_PART}.{PRODUCT_NAME}.STATS.csv'
-print('CREATING:',DSET_PATH)
-
-
-# In[5]:
-
-
-INPUT_PREFIX='ab_spot'
-INPUT_FOLDER='spot'
-INPUT_DIR=f'{DATA_DIR}/{INPUT_FOLDER}'
-INPUT_PATHS=glob(f'{INPUT_DIR}/*.tif')
-
-
-# In[6]:
-
-
-HAS_RGBN=True
-RGBN_PREFIX='naip'
-RGBN_FOLDER='naip'
-RGBN_DIR=f'{DATA_DIR}/{RGBN_FOLDER}'
-RGBN_PATHS=glob(f'{RGBN_DIR}/*.tif')
-
-
-# In[7]:
-
-
-HAS_LIDAR=True
-LIDAR_PREFIX='hag'
-LIDAR_FOLDER='lidar/USGS_LPC_CA_LosAngeles_2016_LAS_2018'
-LIDAR_DIR=f'{DATA_DIR}/{LIDAR_FOLDER}'
-LIDAR_PATHS=glob(f'{LIDAR_DIR}/*.tif')
-
-
-# ---
-
-# In[8]:
-
-
+#
+# CONSTANTS
+#
 YEAR_TAIL_RGX='_20[0-9]{2}-(train|valid|test).tif$'
 TYPE_RGX='-(train|valid|test).'
+MAX_BLACK_PIXEL=512*4
+DATA_DIR='/DATA/imagery'
+VERSION=1
+PROJECT_DIR=Path(_filedir).parent
 
 
-# ---
-
-# In[9]:
-
-
-INPUTS_DF=pd.DataFrame(INPUT_PATHS,columns=['input_path'])
-print('NB_IMAGES:',INPUTS_DF.shape[0])
-
-
-# ---
-
-# In[10]:
-
-
+#
+# HELPERS
+#
 def get_dset_type(path):
     m=re.search(TYPE_RGX,path)
     if m:
@@ -106,8 +40,8 @@ def stats(im):
     return im.mean(axis=(1,2)), im.std(axis=(1,2))
 
 
-def get_tile_key(input_path):
-    return re.sub(f'^{INPUT_PREFIX}_','',os.path.basename(input_path)).split('_')[0]
+def get_tile_key(input_path,input_prefix):
+    return re.sub(f'^{input_prefix}_','',os.path.basename(input_path)).split('_')[0]
 
 
 def get_path_with_key(paths,key):
@@ -134,24 +68,24 @@ def pair_data(paths,key):
     return path, means, stdevs
 
 
-def stat_row(row_dict):
+def stat_row(row_dict,input_paths,rgbn_paths,lidar_paths,input_prefix):
     r=row_dict.copy()
     input_path=row_dict['input_path']
-    tile_key=get_tile_key(input_path)
+    tile_key=get_tile_key(input_path,input_prefix)
     im=io.read(input_path,return_profile=False)
     r['tile_key']=tile_key
     r['means'],r['stdevs']=stats(im)
     r['black_pixel_count']=(im[:3].sum(axis=0)==0).sum()
     r['year']=get_year(input_path)
     r['dset_type']=get_dset_type(input_path)
-    if HAS_RGBN:
-        path, means, stdevs=pair_data(RGBN_PATHS,tile_key)
+    if rgbn_paths:
+        path, means, stdevs=pair_data(rgbn_paths,tile_key)
         r['rgbn_path']=path
         r['rgbn_means']=means
         r['rgbn_stdevs']=stdevs
         r['rgbn_year']=get_year(path)
-    if HAS_LIDAR:
-        path, means, stdevs=pair_data(LIDAR_PATHS,tile_key)
+    if lidar_paths:
+        path, means, stdevs=pair_data(lidar_paths,tile_key)
         r['hag_path']=path
         r['hag_means']=means
         r['hag_stdevs']=stdevs
@@ -164,62 +98,68 @@ def to_list(arr):
     return arr
 
 
-def run_region(lim=None,save=True):
-    df=INPUTS_DF.copy().iloc[:lim]
-    row_dicts=df.to_dict('records')
-    print('NB_IMAGES:',len(row_dicts))
-    print(row_dicts[0])
-    out=mproc.map_with_threadpool(stat_row,row_dicts,max_processes=64)
-    df=pd.DataFrame(out)
-    if save:
-        _df=df.copy()
-        _df['means']=_df.means.apply(to_list)
-        _df['stdevs']=_df.stdevs.apply(to_list)
-        _df['rgbn_means']=_df.means.apply(to_list)
-        _df['rgbn_stdevs']=_df.stdevs.apply(to_list)
-        _df['hag_means']=_df.means.apply(to_list)
-        _df['hag_stdevs']=_df.stdevs.apply(to_list)
-        _df.to_csv(DSET_PATH,index=False)
-        return df, DSET_PATH
+def run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix):
+    input_paths=glob(f'{inputs_dir}/*.tif')
+    if rgbn_dir:
+        rgbn_paths=glob(f'{rgbn_dir}/*.tif')
     else:
-        return df
+        rgbn_paths=False
+    if lidar_dir:
+        lidar_paths=glob(f'{lidar_dir}/*.tif')
+    else:
+        lidar_paths=False
+    df=pd.DataFrame(input_paths,columns=['input_path'])
+    row_dicts=df.to_dict('records')
+    print('nb_inputs:',len(row_dicts))
+    def _stat_row(row_dict):
+        return stat_row(row_dict,input_paths,rgbn_paths,lidar_paths,input_prefix)
+    out=mproc.map_with_threadpool(_stat_row,row_dicts,max_processes=64)
+    df=pd.DataFrame(out)
+    df['means']=df.means.apply(to_list)
+    df['stdevs']=df.stdevs.apply(to_list)
+    df['rgbn_means']=df.means.apply(to_list)
+    df['rgbn_stdevs']=df.stdevs.apply(to_list)
+    df['hag_means']=df.means.apply(to_list)
+    df['hag_stdevs']=df.stdevs.apply(to_list)
+    df.to_csv(dset_path,index=False)
+    return dset_path
 
 
-# ---
+#
+# RUN
+#
 
-# In[11]:
-
-
-df,path=run_region(save=True)
-print(path)
-
-
-# ---
-
-# In[17]:
-
-
-test=(df.black_pixel_count>MAX_BLACK_PIXEL)
-print('NB BLACK > MAX BLACK PIXS:',df[test].shape[0])
-_df=df[~test]
-print('=>',_df.shape[0])
-
-
-# In[18]:
-
-
-print(f'MEANS={_df.means.mean(axis=0).tolist()}')
-print(f'STDEVS={_df.stdevs.mean(axis=0).tolist()}')
-
-
-# In[19]:
-
-
-pd.read_csv(path,converters={'means': eval}).head()
-
-
-# In[ ]:
+@click.command( help='generate dataset' )
+@click.argument('region_name',type=str)
+def run(region_name):
+    print('REGION:',region_name)
+    aoi=load.aoi(region_name)
+    root_dir=f'{DATA_DIR}/{region_name}/'
+    root_dir=f'{root_dir}/v{aoi.get("version",VERSION)}/{aoi["resolution"]}'
+    inputs_dir=f'{root_dir}/{aoi["input_folder"]}'
+    rgbn_folder=aoi.get('rgbn_folder')
+    if rgbn_folder:
+        rgbn_dir=f'{root_dir}/{rgbn_folder}'
+    else:
+        rgbn_dir=None
+    lidar_folder=aoi.get('lidar_folder')
+    if lidar_folder:
+        lidar_dir=f'{root_dir}/{lidar_folder}'
+        subfolder=aoi.get('subfolder')
+        if subfolder:
+            lidar_dir=f'{lidar_dir}/{subfolder}'
+    else:
+        lidar_dir=None
+    input_product=aoi["input_product"]
+    input_prefix=aoi.get('input_prefix',f'ab_{input_product}')
+    res_part=re.sub(r'\.','p',str(aoi['resolution']))
+    dset_path=f'{PROJECT_DIR}/datasets/{region_name}.{res_part}.{input_product}.STATS.csv'
+    path=run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix)
+    print('DSET:',path)
 
 
+
+if __name__ == "__main__":
+    run()
 
 
