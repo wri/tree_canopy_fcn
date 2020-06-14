@@ -19,7 +19,7 @@ def save_master_tile_list(
         pad=PAD,
         return_tiles=False,
         return_keys=False):
-    dest=paths.tile_keys(region_name,suffix=suffix,version=version)
+    dest=paths.tile_keys(region_name,resolution,suffix=suffix,version=version)
     out=_fetch_tiles(
             region_name,
             geometry=geometry,
@@ -37,12 +37,13 @@ def save_master_tile_list(
 
 def split_tile_keys(
         region_name,
+        resolution,
         version=1,
         suffix='master',
         valid_frac=0.2,
         test_frac=0.1,
         save=True):
-    master_path=paths.tile_keys(region_name,suffix=suffix,version=version)
+    master_path=paths.tile_keys(region_name,resolution,suffix=suffix,version=version)
     keys=load.tile_keys(path=master_path)
     out=_split_tile_keys(keys,valid_frac=valid_frac,test_frac=test_frac)
     train_path=_save_split(out[0],master_path,'train',suffix)
@@ -57,15 +58,16 @@ def split_tile_keys(
 
 def sample_tile_keys(
         region_name,
+        resolution,
         version=1,
         suffix='master',
         frac=0.2,
         include_test=True,
         save=True):
-    train_path=_save_sample_keys(region_name,suffix='train',version=version,frac=frac)
-    valid_path=_save_sample_keys(region_name,suffix='valid',version=version,frac=frac)
+    train_path=_save_sample_keys(region_name,resolution,suffix='train',version=version,frac=frac)
+    valid_path=_save_sample_keys(region_name,resolution,suffix='valid',version=version,frac=frac)
     if include_test:
-        test_path=_save_sample_keys(region_name,suffix='test',version=version,frac=frac)
+        test_path=_save_sample_keys(region_name,resolution,suffix='test',version=version,frac=frac)
         return train_path, valid_path, test_path
     else:
         return train_path, valid_path
@@ -75,9 +77,9 @@ def sample_tile_keys(
 #
 # INTERNAL
 #
-def _save_sample_keys(region_name,suffix,version,frac):
-    keys=load.tile_keys(region_name,suffix=suffix,version=version)
-    dest=paths.tile_keys(region_name,suffix=suffix,version=version,frac=frac)
+def _save_sample_keys(region_name,resolution,suffix,version,frac):
+    keys=load.tile_keys(region_name,resolution,suffix=suffix,version=version)
+    dest=paths.tile_keys(region_name,resolution,suffix=suffix,version=version,frac=frac)
     shuffle(keys)
     h.save_pickle(keys[:int(frac*len(keys))],dest)
     return dest
@@ -110,9 +112,9 @@ def _fetch_tiles(
     study_area=load.study_area(geometry or region_name)
     tiles=DLTile.from_shape(
         shape=study_area, 
-        resolution=RESOLUTION, 
-        tilesize=TILESIZE, 
-        pad=PAD)
+        resolution=resolution, 
+        tilesize=tilesize, 
+        pad=pad)
     if dest or return_keys:
         keys=[t.key for t in tiles]
         if dest:

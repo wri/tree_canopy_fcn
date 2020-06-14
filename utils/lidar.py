@@ -19,7 +19,6 @@ EPT_PROJECTOR=pyproj.Transformer.from_proj(
     pyproj.Proj(init=EPSG4326),
     pyproj.Proj(init=EPT_SRS))
 
-RESOLUTION=1.0
 HEIGHT_BOUNDS=[-3,400]
 GROUNDIFY={ "type": "filters.smrf" }
 HAG={ "type": "filters.hag" } 
@@ -40,6 +39,7 @@ MAX_PROCESSES=32
 def download_tileset(
         src,
         region,
+        resolution,
         keys,
         prefix='hag',
         version=1,
@@ -50,6 +50,7 @@ def download_tileset(
         overwrite=False):
     tile_dir=paths.lidar_tile(
             region,
+            resolution,
             tile_key=False,
             prefix=prefix,
             version=version,
@@ -59,6 +60,7 @@ def download_tileset(
     def _download(key):
         dest=paths.lidar_tile(
             region,
+            resolution=resolution,
             tile_key=key,
             prefix=prefix,
             version=version,
@@ -136,6 +138,7 @@ def download_tile(src,dest,tile,dry_run=False,**kwargs):
     return download(
         src,
         dest,
+        resolution=tile.resolution,
         crs=tile.crs,
         crs_bounds=tile.bounds,
         ept_bounds=transform(EPT_PROJECTOR.transform,tile.geometry).bounds,
@@ -146,6 +149,7 @@ def download_tile(src,dest,tile,dry_run=False,**kwargs):
 def download(
         src=None,
         dest=None,
+        resolution=None,
         crs=None,
         crs_bounds=None,
         ept_bounds=None,
@@ -153,7 +157,7 @@ def download(
         dry_run=False,
         **kwargs):
     if not pline:
-        pline=pipeline(src,dest,crs,crs_bounds,ept_bounds,**kwargs)
+        pline=pipeline(src,dest,crs,crs_bounds,ept_bounds,resolution,**kwargs)
     _pline=pline
     pline=pdal.Pipeline(json.dumps(pline))
     pline.validate() 

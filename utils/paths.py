@@ -12,8 +12,8 @@ def study_area(geometry_name):
     return f'{GEOMETRY_DIR}/{geometry_name}.geojson'
 
 
-def tile_keys(region_name,suffix=None,version=1,frac=None):
-    path=f'{TILES_DIR}/{region_name}'
+def tile_keys(region_name,resolution,suffix=None,version=1,frac=None):
+    path=f'{TILES_DIR}/{resolution}/{region_name}'
     if suffix:
         path=f'{path}-{suffix}'
     if version:
@@ -25,6 +25,7 @@ def tile_keys(region_name,suffix=None,version=1,frac=None):
 
 def lidar_tile(
         region_name,
+        resolution,
         tile_key=None,
         prefix='hag',
         version=1,
@@ -35,7 +36,7 @@ def lidar_tile(
     path=f'{IMAGERY_ROOT_DIR}/{region_name}'
     if version:
         path=f'{path}/v{version}'
-    path=f'{path}/lidar'
+    path=f'{path}/{resolution}/lidar/'
     if subdir:
         path=f'{path}/{subdir}'
     if tile_key:

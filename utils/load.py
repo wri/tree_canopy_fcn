@@ -129,16 +129,23 @@ def study_area(study_area):
     return study_area
 
 
-def tile_keys(region_name=None,suffix=None,version=1,path=None,frac=None):
+def tile_keys(region_name=None,resolution=None,suffix=None,version=1,path=None,frac=None):
     if not path:
-        path=paths.tile_keys(region_name,suffix=suffix,version=version,frac=frac)
+        if not resolution:
+            resolution=aoi(region_name,'resolution')
+        path=paths.tile_keys(
+            region_name,
+            resolution,
+            suffix=suffix,
+            version=version,
+            frac=frac)
     keys=h.read_pickle(path)
     print(f'{path}:',len(keys))
     return keys
 
 
-def lidar_tile(region_name,tile_key,prefix='hag',version=1,return_profile=False):
-    path=paths.lidar_tile(region_name,tile_key,prefix=prefix,version=version)
+def lidar_tile(region_name,resolution,tile_key,prefix='hag',version=1,return_profile=False):
+    path=paths.lidar_tile(region_name,resolution,tile_key,prefix=prefix,version=version)
     return io.read(path,return_profile=return_profile)
 
 
