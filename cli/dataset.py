@@ -108,6 +108,10 @@ def run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix):
         lidar_paths=glob(f'{lidar_dir}/*.tif')
     else:
         lidar_paths=False
+    print(inputs_dir)
+    print(rgbn_dir)
+    print(lidar_dir)
+    print(len(input_paths))
     df=pd.DataFrame(input_paths,columns=['input_path'])
     row_dicts=df.to_dict('records')
     print('nb_inputs:',len(row_dicts))
@@ -121,6 +125,7 @@ def run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix):
     df['rgbn_stdevs']=df.stdevs.apply(to_list)
     df['hag_means']=df.means.apply(to_list)
     df['hag_stdevs']=df.stdevs.apply(to_list)
+    print(df.sample().iloc[0])
     df.to_csv(dset_path,index=False)
     return dset_path
 
@@ -134,7 +139,7 @@ def run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix):
 def run(region_name):
     print('REGION:',region_name)
     aoi=load.aoi(region_name)
-    root_dir=f'{DATA_DIR}/{region_name}/'
+    root_dir=f'{DATA_DIR}/{region_name}'
     root_dir=f'{root_dir}/v{aoi.get("version",VERSION)}/{aoi["resolution"]}'
     inputs_dir=f'{root_dir}/{aoi["input_folder"]}'
     rgbn_folder=aoi.get('rgbn_folder')
