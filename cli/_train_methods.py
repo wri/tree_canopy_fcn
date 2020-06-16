@@ -10,7 +10,7 @@ import torch_kit.functional as F
 from torch_kit.optimizers.radam import RAdam
 import pytorch_models.deeplab.model as dm
 import pytorch_models.unet.model as um
-from utils.dataloader import HeightIndexDataset, CATEGORY_BOUNDS
+from utils.dataloader import HeightIndexDataset
 
 
 #

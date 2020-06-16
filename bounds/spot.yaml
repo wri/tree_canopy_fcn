@@ -2,7 +2,7 @@
 #
 # WMIN, WMAX = -1, -0.25
 # GMIN, GMAX = 0.16, 1
-# BMIN, BMAX = -0.125, 0.1
+# BMIN, BMAX = -0.2, 0.12
 #
 ##############################################################################
 
@@ -55,23 +55,23 @@ green:
 bu:
   - category: pavement/bare_ground
     hex: '#ffffff'
-    ndvi: [-0.125,0.1]
+    ndvi: [-0.2,0.12]
     height: 
       max: 1.6
 
   - category: 1-story
     hex: '#FFC0CB'
-    ndvi: [-0.125,0.1]
+    ndvi: [-0.2,0.12]
     height: [1.6,5]
     
   - category: 2to3-story
     hex: '#c1cefa'
-    ndvi: [-0.125,0.1]
+    ndvi: [-0.2,0.12]
     height: [5,10]
     
   - category: 4+-story
     hex: '#ff00ff'
-    ndvi: [-0.125,0.1]
+    ndvi: [-0.2,0.12]
     height: 10
       
     
