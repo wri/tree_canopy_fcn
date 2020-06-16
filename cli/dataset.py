@@ -143,6 +143,9 @@ def run_region(inputs_dir,rgbn_dir,lidar_dir,dset_path,input_prefix):
     print('.. - hag ok?',df.hag_negative.mean())
     # df=df[df.hag_negative<(MAX_BLACK_PIXEL*3)]  
     # print('..',df.shape[0])
+    print('hag',df.hag_shape.astype(str).unique())
+    print('rgbn',df.rgbn_shape.astype(str).unique())
+    print('input',df.input_shape.astype(str).unique())
     df=df[df.hag_shape.apply(lambda s: s==[512,512])] 
     print('...',df.shape[0])
     df=df[df.rgbn_shape.apply(lambda s: s==[512,512])]    

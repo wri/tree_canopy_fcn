@@ -1,6 +1,6 @@
 run:
 
-    - pleiades-green_bu-ndvi-ndwi:
+    - spot-green_bu-ndvi-ndwi:
         nb_epochs: 50
         mask_value: 8
         weights: null 
@@ -29,7 +29,7 @@ run:
             float_cropping: 64
 
 models:
-    pleiades-green_bu-ndvi-ndwi:    
+    spot-green_bu-ndvi-ndwi:    
         in_ch: 6
         out_ch: 9
         aspp: False
@@ -46,6 +46,6 @@ models:
 
 run_notes:
 
-    - pleiades-green_bu-ndvi-ndwi:
+    - spot-green_bu-ndvi-ndwi:
       - pass
 
